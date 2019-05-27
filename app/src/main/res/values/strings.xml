@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name" translatable="false">Jeanne</string>
+    <string name="tab_folders">Folders</string>
+    <string name="tab_titles">Titles</string>
+    <string name="tab_artists">Artists</string>
+    <string name="tab_albums">Albums</string>
+    <string name="tab_playlists">Playlists</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="alert_need_permission">Permission Needed!</string>
+    <string name="alert_need_permission_text">Permissions are required for this app. Please grant them. Closing App.</string>
+</resources>
