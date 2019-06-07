@@ -22,6 +22,8 @@ import de.dascapschen.android.jeanne.NavigationRequest;
 import de.dascapschen.android.jeanne.R;
 import de.dascapschen.android.jeanne.SongController;
 import de.dascapschen.android.jeanne.adapters.RecyclerAdapter;
+import de.dascapschen.android.jeanne.data.Album;
+import de.dascapschen.android.jeanne.singletons.AllAlbums;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -54,50 +56,12 @@ public class AlbumsFragment extends Fragment implements RecyclerAdapter.OnItemCl
         ArrayList<String> subtitles = new ArrayList<>();
         ArrayList<Uri> images = new ArrayList<>();
 
-        //Query the ALBUMS!!!
-        Uri mediaUri = MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI;
-        //                             ^~~~~~~
+        AllAlbums albums = AllAlbums.instance(getContext());
 
-        String[] projection = {
-                MediaStore.Audio.Albums.ALBUM,
-                MediaStore.Audio.Albums.ARTIST,
-                MediaStore.Audio.Albums.ALBUM_ART,
-                MediaStore.Audio.Albums._ID
-        };
-
-        String sort = MediaStore.Audio.Albums.ALBUM +" ASC";
-
-        Cursor cursor = getContext().getContentResolver()
-                .query( mediaUri, projection, null, null, sort);
-
-        if( cursor != null && cursor.moveToFirst() )
+        for(Album a : albums.data())
         {
-            int albumIndex = cursor.getColumnIndex( MediaStore.Audio.Albums.ALBUM );
-            int artistIndex = cursor.getColumnIndex( MediaStore.Audio.Albums.ARTIST );
-            int artIndex = cursor.getColumnIndex( MediaStore.Audio.Albums.ALBUM_ART );
-            int idIndex = cursor.getColumnIndex( MediaStore.Audio.Albums._ID );
-
-            do {
-                String albumName = cursor.getString( albumIndex );
-                String artistName = cursor.getString( artistIndex );
-                String artPath = cursor.getString( artIndex );
-
-                int id = cursor.getInt(idIndex);
-                albumIds.add(id);
-
-                if( artPath != null )
-                {
-                    Uri artUri = Uri.parse(artPath);
-                    images.add( artUri );
-                }
-
-                titles.add(albumName);
-                subtitles.add(artistName);
-
-
-            } while( cursor.moveToNext() );
-
-            cursor.close();
+            titles.add( a.getAlbumTitle() );
+            subtitles.add( ""+a.getTitles().size()+" Songs" );
         }
 
         RecyclerView albumsView = (RecyclerView)view.findViewById(R.id.recyclerView);

@@ -8,20 +8,7 @@ import java.util.Map;
 
 public abstract class SingletonBase<T>
 {
-    protected static SingletonBase mInstance = null;
     protected Map<Integer, T> mData = null;
-
-    protected SingletonBase(){}
-
-    public static SingletonBase instance(Context context)
-    {
-        if( mInstance.mData == null )
-        {
-            mInstance.mData = new HashMap<>();
-            mInstance.queryAll(context);
-        }
-        return mInstance;
-    }
 
     public Collection<T> data()
     {

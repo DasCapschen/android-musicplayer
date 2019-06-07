@@ -21,6 +21,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -90,6 +91,9 @@ public class MainActivity extends AppCompatActivity
     {
         switch(item.getItemId())
         {
+            case android.R.id.home: //back button
+                back();
+                break;
             case R.id.menu_item_settings:
                 break;
             case R.id.menu_item_about:
@@ -111,13 +115,6 @@ public class MainActivity extends AppCompatActivity
     {
         navController.popBackStack(R.id.destination_main, false);
         getSupportActionBar().setDisplayHomeAsUpEnabled(false);
-    }
-
-    @Override
-    public boolean onNavigateUp()
-    {
-        back();
-        return navController.navigateUp();
     }
 
     @Override

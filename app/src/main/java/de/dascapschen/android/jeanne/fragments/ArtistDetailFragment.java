@@ -14,8 +14,6 @@ import de.dascapschen.android.jeanne.R;
  */
 public class ArtistDetailFragment extends Fragment
 {
-
-
     public ArtistDetailFragment()
     {
         // Required empty public constructor

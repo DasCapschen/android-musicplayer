@@ -1,6 +1,7 @@
 package de.dascapschen.android.jeanne.fragments;
 
 
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -9,6 +10,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -60,12 +62,13 @@ public class TitlesFragment extends Fragment implements RecyclerAdapter.OnItemCl
         ArrayList<String> subtitles = new ArrayList<>();
         ArrayList<Uri> images = new ArrayList<>();
 
-        //does this work?
-        AllSongs songs = (AllSongs)AllSongs.instance(getContext());
-        AllArtists artists = (AllArtists)AllArtists.instance(getContext());
+        AllSongs songs = AllSongs.instance(getContext());
+        AllArtists artists = AllArtists.instance(getContext());
 
+        //FIXME: this just seems wrong...
         for( Song song : songs.data() )
         {
+            titleIDs.add( song.getId() );
             titles.add( song.getSongTitle() );
             subtitles.add( artists.get(song.getArtistID()).getArtistName() );
         }
