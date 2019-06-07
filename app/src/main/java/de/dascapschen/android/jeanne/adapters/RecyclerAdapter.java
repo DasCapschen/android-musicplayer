@@ -1,19 +1,13 @@
 package de.dascapschen.android.jeanne.adapters;
 
-import android.content.ContentResolver;
 import android.content.Context;
-import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.media.ThumbnailUtils;
 import android.net.Uri;
-import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -39,34 +33,54 @@ public class RecyclerAdapter extends RecyclerView.Adapter<ViewHolder>
         mImageUris = imageUris;
     }
 
+    @Override
+    public int getItemViewType(int position)
+    {
+        if(position >= getItemCount()-1)
+            return 1;
+        else
+            return 0;
+    }
+
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i)
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int viewType)
     {
-        View view = LayoutInflater.from(viewGroup.getContext())
-                .inflate(R.layout.recycler_item, viewGroup, false);
+        View view;
+        ViewHolder holder;
 
-        ViewHolder holder = new ViewHolder(view, mListener);
+        if( viewType == 1 )
+        {
+            view = LayoutInflater.from(viewGroup.getContext())
+                    .inflate(R.layout.recycler_end_padding, viewGroup, false);
+            holder = new ViewHolder(view, null);
+        }
+        else
+        {
+            view = LayoutInflater.from(viewGroup.getContext())
+                    .inflate(R.layout.recycler_item, viewGroup, false);
+
+            holder = new ViewHolder(view, mListener);
+        }
 
         return holder;
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder viewHolder, int i)
+    public void onBindViewHolder(@NonNull ViewHolder viewHolder, int position)
     {
-        if(mTitles.size() > i)
-        {
-            viewHolder.title.setText(mTitles.get(i));
-        }
+        if( position >= mTitles.size() ) { return; } //if this is last item
 
-        if( mSubtitles.size() > i )
+        viewHolder.title.setText(mTitles.get(position));
+
+        if( mSubtitles.size() > position )
         {
-            viewHolder.subtitle.setText(mSubtitles.get(i));
+            viewHolder.subtitle.setText(mSubtitles.get(position));
         }
 
         try
         {
-            viewHolder.image.setImageURI(mImageUris.get(i));
+            viewHolder.image.setImageURI(mImageUris.get(position));
         }
         catch(Exception e)
         {
@@ -78,7 +92,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<ViewHolder>
     @Override
     public int getItemCount()
     {
-        return mTitles.size();
+        return mTitles.size()+1;
     }
 
 

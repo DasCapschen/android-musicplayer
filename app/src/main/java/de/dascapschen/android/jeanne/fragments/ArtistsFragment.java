@@ -55,8 +55,10 @@ public class ArtistsFragment extends Fragment implements RecyclerAdapter.OnItemC
                 MediaStore.Audio.Artists.NUMBER_OF_ALBUMS
         };
 
+        String sort = MediaStore.Audio.Artists.ARTIST + " ASC";
+
         Cursor cursor = getContext().getContentResolver()
-                .query( mediaUri, projection, null, null, null);   //query artist table, instead of media
+                .query( mediaUri, projection, null, null, null);
 
         if( cursor != null && cursor.moveToFirst() )
         {

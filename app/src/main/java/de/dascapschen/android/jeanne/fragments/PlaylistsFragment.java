@@ -59,8 +59,10 @@ public class PlaylistsFragment extends Fragment implements RecyclerAdapter.OnIte
                 MediaStore.Audio.Playlists.NAME
         };
 
+        String sort = MediaStore.Audio.Playlists.NAME + " ASC";
+
         Cursor cursor = getContext().getContentResolver()
-                .query( mediaUri, projection, null, null, null);   //query artist table, instead of media
+                .query( mediaUri, projection, null, null, null);
 
         if( cursor != null && cursor.moveToFirst() )
         {

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/navgraph"
+    app:startDestination="@id/destination_main">
+
+    <fragment
+        android:id="@+id/destination_main"
+        android:name="de.dascapschen.android.jeanne.fragments.MainFragment"
+        android:label="fragment_main"
+        tools:layout="@layout/fragment_main" >
+        <action
+            android:id="@+id/action_to_artist"
+            app:destination="@id/destination_artist_detail" />
+        <action
+            android:id="@+id/action_to_album"
+            app:destination="@id/destination_album_detail" />
+    </fragment>
+    <fragment
+        android:id="@+id/destination_artist_detail"
+        android:name="de.dascapschen.android.jeanne.fragments.ArtistDetailFragment"
+        android:label="fragment_artist_detail"
+        tools:layout="@layout/fragment_artist_detail" />
+    <fragment
+        android:id="@+id/destination_album_detail"
+        android:name="de.dascapschen.android.jeanne.fragments.AlbumDetailFragment"
+        android:label="fragment_album_detail"
+        tools:layout="@layout/fragment_album_detail" />
+</navigation>

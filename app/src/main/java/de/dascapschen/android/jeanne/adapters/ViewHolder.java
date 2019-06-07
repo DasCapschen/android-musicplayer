@@ -23,6 +23,9 @@ public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickL
         super(itemView);
 
         layout = itemView.findViewById(R.id.recylcer_item_root_layout);
+        if( layout == null )
+            return;
+
         image = itemView.findViewById(R.id.recycler_item_image);
         title = itemView.findViewById(R.id.recycler_item_title);
         subtitle = itemView.findViewById(R.id.recycler_item_subtitle);
