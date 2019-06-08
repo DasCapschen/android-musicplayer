@@ -1,10 +1,8 @@
 package de.dascapschen.android.jeanne.fragments;
 
 
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -20,7 +18,6 @@ import java.util.Locale;
 
 import de.dascapschen.android.jeanne.NavigationRequest;
 import de.dascapschen.android.jeanne.R;
-import de.dascapschen.android.jeanne.SongController;
 import de.dascapschen.android.jeanne.adapters.RecyclerAdapter;
 import de.dascapschen.android.jeanne.data.Album;
 import de.dascapschen.android.jeanne.singletons.AllAlbums;
@@ -30,8 +27,6 @@ import de.dascapschen.android.jeanne.singletons.AllAlbums;
  */
 public class AlbumsFragment extends Fragment implements RecyclerAdapter.OnItemClickListener
 {
-
-    ArrayList<Integer> albumIds = new ArrayList<>();
 
     public AlbumsFragment()
     {
@@ -56,16 +51,11 @@ public class AlbumsFragment extends Fragment implements RecyclerAdapter.OnItemCl
         ArrayList<String> subtitles = new ArrayList<>();
         ArrayList<Uri> images = new ArrayList<>();
 
-        AllAlbums albums = AllAlbums.instance(getContext());
-
-        for(Album a : albums.data())
-        {
-            titles.add( a.getAlbumTitle() );
-            subtitles.add( ""+a.getTitles().size()+" Songs" );
-        }
+        AllAlbums albums = AllAlbums.instance();
 
         RecyclerView albumsView = (RecyclerView)view.findViewById(R.id.recyclerView);
-        RecyclerAdapter albumsAdapter = new RecyclerAdapter(getContext(), this, titles, subtitles, images);
+        RecyclerAdapter<Album> albumsAdapter
+                = new RecyclerAdapter<>(getContext(), this, albums.data());
 
         albumsView.setAdapter(albumsAdapter);
         albumsView.setLayoutManager( new LinearLayoutManager(getContext()));
@@ -78,34 +68,5 @@ public class AlbumsFragment extends Fragment implements RecyclerAdapter.OnItemCl
                 "Clicked on Album %d", position), Toast.LENGTH_SHORT).show();
 
         ((NavigationRequest)getActivity()).navigate(R.id.action_to_album);
-
-        /*
-        Uri mediaUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-
-        String[] projection = {
-                MediaStore.Audio.Media.ALBUM_ID,
-                MediaStore.Audio.Media._ID
-        };
-
-        String selection = MediaStore.Audio.Media.ALBUM_ID + "=" + albumIds.get(position);
-
-        Cursor c = getContext().getContentResolver().query(mediaUri,
-                projection, selection, null, null);
-
-        if(c != null && c.moveToFirst())
-        {
-            ArrayList<Uri> playlist = new ArrayList<>();
-
-            do {
-                int songId = c.getInt( c.getColumnIndex(MediaStore.Audio.Media._ID) );
-                Uri uri = Uri.withAppendedPath(mediaUri, ""+songId);
-                playlist.add(uri);
-            } while( c.moveToNext() );
-
-            SongController sc = (SongController)getActivity();
-            sc.setPlaylist(playlist);
-            sc.startNewSong(playlist.get(0));
-        }
-        */
     }
 }

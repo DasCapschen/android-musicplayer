@@ -1,10 +1,8 @@
 package de.dascapschen.android.jeanne.adapters;
 
 import android.content.Context;
-import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,25 +10,27 @@ import android.view.ViewGroup;
 import java.util.ArrayList;
 
 import de.dascapschen.android.jeanne.R;
+import de.dascapschen.android.jeanne.data.MusicalData;
 
-public class RecyclerAdapter extends RecyclerView.Adapter<ViewHolder>
+public class RecyclerAdapter<T extends MusicalData> extends RecyclerView.Adapter<ViewHolder>
 {
     Context mContext;
 
+    /*
     ArrayList<String> mTitles;
     ArrayList<String> mSubtitles;
-    ArrayList<Uri> mImageUris;      /* use: ContentResolver.loadThumbnail() */
+    ArrayList<Uri> mImageUris;      // use: ContentResolver.loadThumbnail()
+    */
+
+    ArrayList<T> mData;
 
     private OnItemClickListener mListener;
 
-    public RecyclerAdapter(Context context, OnItemClickListener listener, ArrayList<String> titles,
-                           ArrayList<String> subtitles, ArrayList<Uri> imageUris)
+    public RecyclerAdapter(Context context, OnItemClickListener listener, ArrayList<T> data)
     {
         mContext = context;
         mListener = listener;
-        mTitles = titles;
-        mSubtitles = subtitles;
-        mImageUris = imageUris;
+        mData = data;
     }
 
     @Override
@@ -69,30 +69,21 @@ public class RecyclerAdapter extends RecyclerView.Adapter<ViewHolder>
     @Override
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, int position)
     {
-        if( position >= mTitles.size() ) { return; } //if this is last item
+        if( position >= mData.size() ) { return; } //if this is last item
 
-        viewHolder.title.setText(mTitles.get(position));
+        T datum = mData.get(position);
 
-        if( mSubtitles.size() > position )
-        {
-            viewHolder.subtitle.setText(mSubtitles.get(position));
-        }
+        viewHolder.title.setText( datum.getDescriptionTitle() );
+        viewHolder.subtitle.setText( datum.getDescriptionSubtitle() );
 
-        try
-        {
-            viewHolder.image.setImageURI(mImageUris.get(position));
-        }
-        catch(Exception e)
-        {
-            //load a default image if no art exists
-            viewHolder.image.setImageResource( R.drawable.ic_launcher_background );
-        }
+        //load a default image if no art exists
+        viewHolder.image.setImageResource( R.drawable.ic_launcher_background );
     }
 
     @Override
     public int getItemCount()
     {
-        return mTitles.size()+1;
+        return mData.size()+1;
     }
 
 

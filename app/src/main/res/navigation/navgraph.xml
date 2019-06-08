@@ -26,6 +26,14 @@
             app:popEnterAnim="@anim/nav_default_pop_enter_anim"
             app:popExitAnim="@anim/nav_default_pop_exit_anim"
             app:popUpTo="@+id/destination_main" />
+        <action
+            android:id="@+id/action_to_playlist"
+            app:destination="@id/destination_playlist"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim"
+            app:popUpTo="@+id/destination_main" />
     </fragment>
     <fragment
         android:id="@+id/destination_artist_detail"
@@ -37,4 +45,9 @@
         android:name="de.dascapschen.android.jeanne.fragments.AlbumDetailFragment"
         android:label="fragment_album_detail"
         tools:layout="@layout/fragment_album_detail" />
+    <fragment
+        android:id="@+id/destination_playlist"
+        android:name="de.dascapschen.android.jeanne.fragments.PlaylistDetailFragment"
+        android:label="fragment_playlist_detail"
+        tools:layout="@layout/fragment_playlist_detail" />
 </navigation>

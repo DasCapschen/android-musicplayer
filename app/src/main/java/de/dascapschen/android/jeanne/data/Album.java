@@ -1,21 +1,18 @@
 package de.dascapschen.android.jeanne.data;
 
-import android.net.Uri;
 import java.util.List;
 
-public class Album
+public class Album extends MusicalData
 {
-    private int id;
-    private String albumTitle;
     private int artistID;
-    private List<Integer> titles;
+    private List<Integer> songIds;
 
     public Album(int id, String title, int artistID, List<Integer> titles)
     {
-        this.id = id;
-        this.albumTitle = title;
+        super(id, title); //construct parent
+
         this.artistID = artistID;
-        this.titles = titles;
+        this.songIds = titles;
     }
 
     /*TODO:
@@ -23,8 +20,19 @@ public class Album
         public Uri getAlbumArt() { return albumArt; }
     */
 
-    public int getId() { return id; }
-    public String getAlbumTitle() { return albumTitle; }
     public int getArtistID() { return artistID; }
-    public List<Integer> getTitles() { return titles; }
+    public List<Integer> getSongIds() { return songIds; }
+
+
+    @Override
+    public String getDescriptionTitle()
+    {
+        return name;
+    }
+
+    @Override
+    public String getDescriptionSubtitle()
+    {
+        return String.format("%d Songs", songIds.size());
+    }
 }

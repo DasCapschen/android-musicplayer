@@ -5,24 +5,27 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.provider.MediaStore;
 
-import java.util.HashMap;
-
 import de.dascapschen.android.jeanne.data.Song;
 
 public class AllSongs extends SingletonBase<Song>
 {
-    private static AllSongs mInstance = new AllSongs();
+    private static AllSongs mInstance = null;
 
-    private AllSongs(){}
+    private AllSongs(Context context) {
+        queryAll(context);
+    }
 
-    public static AllSongs instance(Context context)
+    public static AllSongs instance()
     {
-        if( mInstance.mData == null )
-        {
-            mInstance.mData = new HashMap<>();
-            mInstance.queryAll(context);
-        }
         return mInstance;
+    }
+
+    public static void initialize(Context context)
+    {
+        if( mInstance == null )
+        {
+            mInstance = new AllSongs(context);
+        }
     }
 
     @Override
@@ -57,7 +60,7 @@ public class AllSongs extends SingletonBase<Song>
                     cursor.getInt( albumIndex )
                 );
 
-                mData.put(s.getId(), s);
+                put(s.getId(), s);
             } while( cursor.moveToNext() );
 
             cursor.close();

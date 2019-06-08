@@ -1,13 +1,17 @@
 package de.dascapschen.android.jeanne;
 
-import android.net.Uri;
-
 import java.util.ArrayList;
+
+import de.dascapschen.android.jeanne.data.Album;
+import de.dascapschen.android.jeanne.data.Artist;
+import de.dascapschen.android.jeanne.data.Song;
 
 public interface SongController
 {
-    void startNewSong(Uri songUri);
-    void setPlaylist( ArrayList<Uri> songs );
+    void startNewSong( Song song );
+    void setPlaylist( ArrayList<Song> songs );
+    void setPlaylist(Artist artist);
+    void setPlaylist(Album album);
 
     void playSong();
     void pauseSong();

@@ -6,25 +6,29 @@ import android.net.Uri;
 import android.provider.MediaStore;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import de.dascapschen.android.jeanne.data.Album;
 
 public class AllAlbums extends SingletonBase<Album>
 {
-    private static AllAlbums mInstance = new AllAlbums();
+    private static AllAlbums mInstance = null;
 
-    private AllAlbums() {}
+    private AllAlbums(Context context) {
+        queryAll(context);
+    }
 
-    public static AllAlbums instance(Context context)
+    public static AllAlbums instance()
     {
-        if( mInstance.mData == null )
-        {
-            mInstance.mData = new HashMap<>();
-            mInstance.queryAll(context);
-        }
         return mInstance;
+    }
+
+    public static void initialize(Context context)
+    {
+        if( mInstance == null )
+        {
+            mInstance = new AllAlbums(context);
+        }
     }
 
     @Override
@@ -66,7 +70,7 @@ public class AllAlbums extends SingletonBase<Album>
                         songIds
                 );
 
-                mData.put(a.getId(), a);
+                put(a.getId(), a);
             } while( cursor.moveToNext() );
 
             cursor.close();

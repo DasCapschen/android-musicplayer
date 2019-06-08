@@ -1,10 +1,7 @@
 package de.dascapschen.android.jeanne.fragments;
 
 
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -15,11 +12,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-import java.util.ArrayList;
 import java.util.Locale;
 
+import de.dascapschen.android.jeanne.NavigationRequest;
 import de.dascapschen.android.jeanne.R;
 import de.dascapschen.android.jeanne.adapters.RecyclerAdapter;
+import de.dascapschen.android.jeanne.data.Playlist;
+import de.dascapschen.android.jeanne.singletons.AllPlaylists;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -47,37 +46,11 @@ public class PlaylistsFragment extends Fragment implements RecyclerAdapter.OnIte
     {
         super.onViewCreated(view, savedInstanceState);
 
-        ArrayList<String> titles = new ArrayList<>();
-        ArrayList<String> subtitles = new ArrayList<>();
-        ArrayList<Uri> images = new ArrayList<>();
-
-        //Query the PLAYLISTS!!!
-        Uri mediaUri = MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI;
-        //                             ^~~~~~~
-
-        String[] projection = {
-                MediaStore.Audio.Playlists.NAME
-        };
-
-        String sort = MediaStore.Audio.Playlists.NAME + " ASC";
-
-        Cursor cursor = getContext().getContentResolver()
-                .query( mediaUri, projection, null, null, null);
-
-        if( cursor != null && cursor.moveToFirst() )
-        {
-            int nameIndex = cursor.getColumnIndex( MediaStore.Audio.Playlists.NAME );
-
-            do {
-                String playlistName = cursor.getString( nameIndex );
-                titles.add(playlistName);
-            } while( cursor.moveToNext() );
-
-            cursor.close();
-        }
+        AllPlaylists playlists = AllPlaylists.instance();
 
         RecyclerView playlistView = (RecyclerView)view.findViewById(R.id.recyclerView);
-        RecyclerAdapter playlistAdapter = new RecyclerAdapter(getContext(), this, titles, subtitles, images);
+        RecyclerAdapter<Playlist> playlistAdapter =
+                new RecyclerAdapter<>(getContext(), this, playlists.data());
 
         playlistView.setAdapter(playlistAdapter);
         playlistView.setLayoutManager( new LinearLayoutManager(getContext()) );
@@ -88,5 +61,7 @@ public class PlaylistsFragment extends Fragment implements RecyclerAdapter.OnIte
     {
         Toast.makeText(getContext(), String.format(Locale.getDefault(),
                 "Clicked on Playlist %d", position), Toast.LENGTH_SHORT).show();
+
+        ((NavigationRequest)getActivity()).navigate( R.id.action_to_playlist );
     }
 }

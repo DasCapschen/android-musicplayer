@@ -4,39 +4,40 @@ import android.Manifest;
 import android.animation.TimeInterpolator;
 import android.animation.ValueAnimator;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.GradientDrawable;
 import android.media.MediaPlayer;
-import android.net.Uri;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomSheetBehavior;
-import android.support.design.widget.TabLayout;
 import android.support.transition.AutoTransition;
 import android.support.transition.Scene;
 import android.support.transition.TransitionManager;
 import android.support.transition.TransitionSet;
-import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.navigation.NavController;
-import androidx.navigation.NavDestination;
 import androidx.navigation.Navigation;
 
 import java.util.ArrayList;
+import java.util.List;
 
-import de.dascapschen.android.jeanne.adapters.TabAdapter;
-import de.dascapschen.android.jeanne.callbacks.BottomCallback;
-import de.dascapschen.android.jeanne.notification.NotificationService;
+import de.dascapschen.android.jeanne.data.Album;
+import de.dascapschen.android.jeanne.data.Artist;
+import de.dascapschen.android.jeanne.data.Song;
+import de.dascapschen.android.jeanne.singletons.AllAlbums;
+import de.dascapschen.android.jeanne.singletons.AllArtists;
+import de.dascapschen.android.jeanne.singletons.AllPlaylists;
+import de.dascapschen.android.jeanne.singletons.AllSongs;
 
 public class MainActivity extends AppCompatActivity
         implements SongController, NavigationRequest, MediaPlayer.OnCompletionListener
@@ -44,7 +45,7 @@ public class MainActivity extends AppCompatActivity
     MediaPlayer mediaPlayer;
 
     //we use a list so we can go back
-    ArrayList<Uri> playlist;
+    ArrayList<Song> playlist;
     int index = 0;
     boolean repeat = false;
     boolean shuffle = false;
@@ -76,6 +77,10 @@ public class MainActivity extends AppCompatActivity
                         }
                     })
                     .show();
+        }
+        else
+        {
+            setupView();
         }
     }
 
@@ -131,7 +136,6 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
         //ask for permission first
         if( checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
@@ -140,6 +144,24 @@ public class MainActivity extends AppCompatActivity
             requestPermissions(
                     new String[]{ Manifest.permission.READ_EXTERNAL_STORAGE }, 1);
         }
+        else
+        {
+            queryAllData();
+            setupView();
+        }
+    }
+
+    private void queryAllData()
+    {
+        AllArtists.initialize(this);
+        AllAlbums.initialize(this);
+        AllPlaylists.initialize(this);
+        AllSongs.initialize(this);
+    }
+
+    private void setupView()
+    {
+        setContentView(R.layout.activity_main);
 
         Toolbar toolbar = findViewById(R.id.main_toolbar);
         setSupportActionBar(toolbar);
@@ -151,6 +173,9 @@ public class MainActivity extends AppCompatActivity
 
     private void setupBottomSheet()
     {
+        TextView songText = findViewById(R.id.bottom_song_title);
+        songText.setSelected(true); // to make marquee scrolling work
+
         //setup bottom drawer
         BottomSheetBehavior bottomSheet =
                 BottomSheetBehavior.from( findViewById(R.id.main_bottomSheetFrame) );
@@ -228,14 +253,8 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
-    private void queryMediaFiles()
-    {
-        //query everything only once, save it to arraylists, then pass to fragments as needed
-        //instead of doing this inside the fragments!
-    }
-
     @Override
-    public void startNewSong(Uri songUri)   //when user clicks on a song.
+    public void startNewSong(Song song)   //when user clicks on a song.
     {
         if( mediaPlayer != null )
         {
@@ -243,15 +262,54 @@ public class MainActivity extends AppCompatActivity
             mediaPlayer = null;     //kein Plan ob release den auf null setzt.
         }
 
-        mediaPlayer = MediaPlayer.create(this, songUri);
+        mediaPlayer = MediaPlayer.create(this, song.getUri());
         mediaPlayer.setOnCompletionListener(this);
+
+        TextView text = findViewById(R.id.bottom_song_title);
+        ImageView image = findViewById(R.id.bottom_album_image);
+
+        text.setText( song.getName() );
+        //TODO: image.setImageDrawable( song.getImage() );
+
         playSong();
     }
 
     @Override
-    public void setPlaylist(ArrayList<Uri> songs)
+    public void setPlaylist(ArrayList<Song> songs)
     {
         playlist = songs;
+    }
+
+    @Override
+    public void setPlaylist(Artist artist)
+    {
+        List<Integer> albumIds = artist.getAlbumIDs();
+        List<Integer> songIds = new ArrayList<>();
+
+        AllAlbums allAlbums = AllAlbums.instance();
+
+        for( int album : albumIds ) {
+            songIds.addAll( allAlbums.getByKey(album).getSongIds() );
+        }
+
+        AllSongs allSongs = AllSongs.instance();
+
+        playlist.clear();
+        for( int songID : songIds ){
+            playlist.add( allSongs.getByKey(songID) );
+        }
+
+    }
+
+    @Override
+    public void setPlaylist(Album album)
+    {
+        AllSongs allSongs = AllSongs.instance();
+
+        playlist.clear();
+        for( int songid : album.getSongIds() ){
+            playlist.add( allSongs.getByKey(songid) );
+        }
     }
 
     @Override

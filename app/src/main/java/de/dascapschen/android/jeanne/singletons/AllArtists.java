@@ -6,26 +6,29 @@ import android.net.Uri;
 import android.provider.MediaStore;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 
 import de.dascapschen.android.jeanne.data.Artist;
 
 public class AllArtists extends SingletonBase<Artist>
 {
-    private static AllArtists mInstance = new AllArtists();
+    private static AllArtists mInstance = null;
 
-    private AllArtists() {}
+    private AllArtists(Context context) {
+        queryAll(context);
+    }
 
-    public static AllArtists instance(Context context)
+    public static AllArtists instance()
     {
-        if( mInstance.mData == null )
-        {
-            mInstance.mData = new HashMap<>();
-            mInstance.queryAll(context);
-        }
         return mInstance;
+    }
+
+    public static void initialize(Context context)
+    {
+        if( mInstance == null )
+        {
+            mInstance = new AllArtists(context);
+        }
     }
 
     @Override
@@ -63,7 +66,7 @@ public class AllArtists extends SingletonBase<Artist>
                         albumIDs
                 );
 
-                mData.put( a.getId(), a );
+                put(a.getId(), a);
             } while( cursor.moveToNext() );
 
             cursor.close();

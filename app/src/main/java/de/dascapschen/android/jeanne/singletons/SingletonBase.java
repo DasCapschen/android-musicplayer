@@ -2,23 +2,32 @@ package de.dascapschen.android.jeanne.singletons;
 
 import android.content.Context;
 
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 
-public abstract class SingletonBase<T>
+import de.dascapschen.android.jeanne.data.MusicalData;
+
+public abstract class SingletonBase<T extends MusicalData>
 {
-    protected Map<Integer, T> mData = null;
+    private ArrayList<T> mData = new ArrayList<>();
+    private HashMap<Integer, Integer> mKeys = new HashMap<>();
 
-    public Collection<T> data()
+    protected void put(int key, T datum)
     {
-        return mData.values();
+        mData.add(datum);
+        mKeys.put(datum.getId(), mData.indexOf(datum));
     }
 
-    public T get(int key)
+    public ArrayList<T> data()
     {
-        return mData.get(key);
+        return mData;
     }
+
+    public T getByIndex(int index)
+    {
+        return mData.get(index);
+    }
+    public T getByKey(int key) { return mData.get( mKeys.get(key) ); }
 
     protected abstract void queryAll(Context context);
 }
