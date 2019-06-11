@@ -4,13 +4,13 @@ import java.util.List;
 
 public class Playlist extends MusicalData
 {
-    List<Song> songs;
+    List<Integer> songIDs;
 
-    public Playlist(int id, String name, List<Song> songs)
+    public Playlist(int id, String name, List<Integer> songs)
     {
         super(id, name);
 
-        this.songs = songs;
+        this.songIDs = songs;
     }
 
     @Override
@@ -22,6 +22,11 @@ public class Playlist extends MusicalData
     @Override
     public String getDescriptionSubtitle()
     {
-        return String.format("%d Songs", songs.size());
+        return String.format("%d Songs", songIDs.size());
+    }
+
+    public List<Integer> getSongIDs()
+    {
+        return songIDs;
     }
 }

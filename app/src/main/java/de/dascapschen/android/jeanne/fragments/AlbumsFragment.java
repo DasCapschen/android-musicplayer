@@ -67,6 +67,11 @@ public class AlbumsFragment extends Fragment implements RecyclerAdapter.OnItemCl
         Toast.makeText(getContext(), String.format(Locale.getDefault(),
                 "Clicked on Album %d", position), Toast.LENGTH_SHORT).show();
 
-        ((NavigationRequest)getActivity()).navigate(R.id.action_to_album);
+        AllAlbums albums = AllAlbums.instance();
+
+        Bundle args = new Bundle();
+        args.putInt("albumID", albums.getByIndex(position).getId());
+
+        ((NavigationRequest)getActivity()).navigate(R.id.action_to_album, args);
     }
 }

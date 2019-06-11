@@ -2,18 +2,33 @@ package de.dascapschen.android.jeanne.fragments;
 
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+
+import java.util.ArrayList;
 
 import de.dascapschen.android.jeanne.R;
+import de.dascapschen.android.jeanne.SongController;
+import de.dascapschen.android.jeanne.adapters.RecyclerAdapter;
+import de.dascapschen.android.jeanne.data.Album;
+import de.dascapschen.android.jeanne.data.Song;
+import de.dascapschen.android.jeanne.singletons.AllAlbums;
+import de.dascapschen.android.jeanne.singletons.AllSongs;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class AlbumDetailFragment extends Fragment
+public class AlbumDetailFragment extends Fragment implements RecyclerAdapter.OnItemClickListener
 {
+    ArrayList<Song> albumSongs;
+
     public AlbumDetailFragment()
     {
         // Required empty public constructor
@@ -26,5 +41,49 @@ public class AlbumDetailFragment extends Fragment
     {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_album_detail, container, false);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
+    {
+        super.onViewCreated(view, savedInstanceState);
+
+        Button playAll = view.findViewById(R.id.album_detail_play_all_btn);
+        playAll.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v)
+            {
+                SongController sc = (SongController) getActivity();
+                sc.setPlaylist(albumSongs);
+                sc.startNewSong(albumSongs.get(0));
+            }
+        });
+
+        int albumID = getArguments().getInt("albumID");
+        Album thisAlbum = AllAlbums.instance().getByKey(albumID);
+
+        getActivity().setTitle( thisAlbum.getName() );
+
+        AllSongs allSongs = AllSongs.instance();
+
+        albumSongs = new ArrayList<>();
+        for (int id : thisAlbum.getSongIds())
+        {
+            albumSongs.add( allSongs.getByKey(id) );
+        }
+
+        RecyclerView recyclerView = view.findViewById(R.id.album_detail_recycler);
+        RecyclerAdapter<Song> adapter
+                = new RecyclerAdapter<>(getContext(), this, albumSongs);
+
+        recyclerView.setAdapter(adapter);
+        recyclerView.setLayoutManager( new LinearLayoutManager(getContext()) );
+    }
+
+    @Override
+    public void onItemClicked(int position)
+    {
+        SongController sc = (SongController) getActivity();
+        sc.startNewSong( albumSongs.get(position) );
     }
 }

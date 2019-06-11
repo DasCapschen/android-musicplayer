@@ -62,6 +62,11 @@ public class ArtistsFragment extends Fragment implements RecyclerAdapter.OnItemC
         Toast.makeText(getContext(), String.format(Locale.getDefault(),
                 "Clicked on Artist %d", position), Toast.LENGTH_SHORT).show();
 
-        ((NavigationRequest)getActivity()).navigate(R.id.action_to_artist);
+        AllArtists artists = AllArtists.instance();
+
+        Bundle args = new Bundle();
+        args.putInt("artistID", artists.getByIndex(position).getId());
+
+        ((NavigationRequest)getActivity()).navigate(R.id.action_to_artist, args);
     }
 }

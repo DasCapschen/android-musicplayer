@@ -80,6 +80,7 @@ public class MainActivity extends AppCompatActivity
         }
         else
         {
+            queryAllData();
             setupView();
         }
     }
@@ -103,15 +104,18 @@ public class MainActivity extends AppCompatActivity
                 break;
             case R.id.menu_item_about:
                 break;
+            case R.id.app_bar_search:
+                //navigate(R.id.action_to_search);
+                break;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
     @Override
-    public void navigate(int actionID)
+    public void navigate(int actionID, Bundle arguments)
     {
-        navController.navigate(actionID);
+        navController.navigate(actionID, arguments);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
@@ -120,6 +124,7 @@ public class MainActivity extends AppCompatActivity
     {
         navController.popBackStack(R.id.destination_main, false);
         getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+        setTitle( R.string.app_name );
     }
 
     @Override
@@ -315,6 +320,10 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void playSong()
     {
+        if(mediaPlayer == null)
+        {
+            startNewSong( playlist.get(index) );
+        }
         mediaPlayer.start();
 
         ImageButton btn = findViewById(R.id.btnPlay);

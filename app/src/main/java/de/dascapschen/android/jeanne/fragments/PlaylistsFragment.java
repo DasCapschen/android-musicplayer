@@ -62,6 +62,11 @@ public class PlaylistsFragment extends Fragment implements RecyclerAdapter.OnIte
         Toast.makeText(getContext(), String.format(Locale.getDefault(),
                 "Clicked on Playlist %d", position), Toast.LENGTH_SHORT).show();
 
-        ((NavigationRequest)getActivity()).navigate( R.id.action_to_playlist );
+        AllPlaylists playlists = AllPlaylists.instance();
+
+        Bundle args = new Bundle();
+        args.putInt("playlistID", playlists.getByIndex(position).getId());
+
+        ((NavigationRequest)getActivity()).navigate( R.id.action_to_playlist, args );
     }
 }

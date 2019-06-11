@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.provider.MediaStore;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import de.dascapschen.android.jeanne.data.Playlist;
 import de.dascapschen.android.jeanne.data.Song;
@@ -32,7 +33,7 @@ public class AllPlaylists extends SingletonBase<Playlist>
     @Override
     protected void queryAll(Context context)
     {
-//Query the PLAYLISTS!!!
+        //Query the PLAYLISTS!!!
         Uri mediaUri = MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI;
         //                             ^~~~~~~
 
@@ -53,10 +54,12 @@ public class AllPlaylists extends SingletonBase<Playlist>
 
             do {
 
+                int playlistID = cursor.getInt( idIndex );
+
                 Playlist p = new Playlist(
-                        cursor.getInt( idIndex ),
+                        playlistID,
                         cursor.getString( nameIndex ),
-                        new ArrayList<Song>() //TODO
+                        getSongIDList(context, playlistID)
                 );
 
                 put(p.getId(), p);
@@ -66,5 +69,30 @@ public class AllPlaylists extends SingletonBase<Playlist>
             cursor.close();
         }
 
+    }
+
+    private List<Integer> getSongIDList(Context context, int playlist)
+    {
+        ArrayList<Integer> songs = new ArrayList<>();
+
+        String[] p = {
+            MediaStore.Audio.Playlists.Members.AUDIO_ID
+        };
+
+        Uri uri = MediaStore.Audio.Playlists.Members.getContentUri("external", playlist);
+
+        Cursor cursor = context.getContentResolver().query(
+                uri, p, null, null, null);
+
+        if(cursor != null && cursor.moveToFirst())
+        {
+            do {
+                songs.add( cursor.getInt( cursor.getColumnIndex(MediaStore.Audio.Playlists.Members.AUDIO_ID) ) );
+            } while( cursor.moveToNext() );
+
+            cursor.close();
+        }
+
+        return songs;
     }
 }
