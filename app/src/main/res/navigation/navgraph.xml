@@ -39,7 +39,7 @@
         android:id="@+id/destination_artist_detail"
         android:name="de.dascapschen.android.jeanne.fragments.ArtistDetailFragment"
         android:label="fragment_artist_detail"
-        tools:layout="@layout/fragment_artist_detail" >
+        tools:layout="@layout/fragment_detail" >
         <argument
             android:name="artistID"
             app:argType="integer" />
@@ -48,7 +48,7 @@
         android:id="@+id/destination_album_detail"
         android:name="de.dascapschen.android.jeanne.fragments.AlbumDetailFragment"
         android:label="fragment_album_detail"
-        tools:layout="@layout/fragment_album_detail" >
+        tools:layout="@layout/fragment_detail" >
         <argument
             android:name="albumID"
             app:argType="integer" />
@@ -57,7 +57,7 @@
         android:id="@+id/destination_playlist"
         android:name="de.dascapschen.android.jeanne.fragments.PlaylistDetailFragment"
         android:label="fragment_playlist_detail"
-        tools:layout="@layout/fragment_playlist_detail" >
+        tools:layout="@layout/fragment_detail" >
         <argument
             android:name="playlistID"
             app:argType="integer" />

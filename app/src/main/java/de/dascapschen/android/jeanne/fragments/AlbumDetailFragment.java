@@ -40,7 +40,7 @@ public class AlbumDetailFragment extends Fragment implements RecyclerAdapter.OnI
                              Bundle savedInstanceState)
     {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_album_detail, container, false);
+        return inflater.inflate(R.layout.fragment_detail, container, false);
     }
 
     @Override
@@ -48,7 +48,7 @@ public class AlbumDetailFragment extends Fragment implements RecyclerAdapter.OnI
     {
         super.onViewCreated(view, savedInstanceState);
 
-        Button playAll = view.findViewById(R.id.album_detail_play_all_btn);
+        Button playAll = view.findViewById(R.id.detail_play_all_btn);
         playAll.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v)
@@ -72,7 +72,7 @@ public class AlbumDetailFragment extends Fragment implements RecyclerAdapter.OnI
             albumSongs.add( allSongs.getByKey(id) );
         }
 
-        RecyclerView recyclerView = view.findViewById(R.id.album_detail_recycler);
+        RecyclerView recyclerView = view.findViewById(R.id.detail_recycler);
         RecyclerAdapter<Song> adapter
                 = new RecyclerAdapter<>(getContext(), this, albumSongs);
 

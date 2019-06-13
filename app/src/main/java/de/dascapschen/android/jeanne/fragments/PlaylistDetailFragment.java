@@ -41,7 +41,7 @@ public class PlaylistDetailFragment extends Fragment implements RecyclerAdapter.
                              Bundle savedInstanceState)
     {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_playlist_detail, container, false);
+        return inflater.inflate(R.layout.fragment_detail, container, false);
     }
 
     @Override
@@ -49,7 +49,7 @@ public class PlaylistDetailFragment extends Fragment implements RecyclerAdapter.
     {
         super.onViewCreated(view, savedInstanceState);
 
-        Button playAll = view.findViewById(R.id.playlist_detail_play_all_btn);
+        Button playAll = view.findViewById(R.id.detail_play_all_btn);
         playAll.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v)
@@ -73,7 +73,7 @@ public class PlaylistDetailFragment extends Fragment implements RecyclerAdapter.
             playlistSongs.add( allSongs.getByKey(id) );
         }
 
-        RecyclerView recyclerView = view.findViewById(R.id.playlist_detail_recycler);
+        RecyclerView recyclerView = view.findViewById(R.id.detail_recycler);
         RecyclerAdapter<Song> adapter
                 = new RecyclerAdapter<>(getContext(), this, playlistSongs);
 
