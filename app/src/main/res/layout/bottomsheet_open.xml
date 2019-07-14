@@ -57,7 +57,7 @@
         app:layout_constraintEnd_toStartOf="@+id/btnPlay"
         app:layout_constraintStart_toStartOf="@+id/bottom_bg_image"
         app:layout_constraintTop_toTopOf="@id/btnPlay"
-        app:srcCompat="@android:drawable/ic_media_previous" />
+        app:srcCompat="@drawable/ic_prev" />
 
     <ImageButton
         android:id="@+id/btnPlay"
@@ -71,7 +71,7 @@
         app:layout_constraintStart_toEndOf="@+id/btnPrev"
         app:layout_constraintTop_toBottomOf="@id/bottom_song_title"
         app:layout_constraintVertical_bias="0.2"
-        app:srcCompat="@android:drawable/ic_media_play" />
+        app:srcCompat="@drawable/ic_play" />
 
     <ImageButton
         android:id="@+id/btnNext"
@@ -84,7 +84,7 @@
         app:layout_constraintEnd_toEndOf="@+id/bottom_bg_image"
         app:layout_constraintStart_toEndOf="@id/btnPlay"
         app:layout_constraintTop_toTopOf="@id/btnPlay"
-        app:srcCompat="@android:drawable/ic_media_next" />
+        app:srcCompat="@drawable/ic_next" />
 
     <ImageButton
         android:id="@+id/btnHide"
