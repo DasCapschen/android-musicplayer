@@ -15,28 +15,23 @@ import de.dascapschen.android.jeanne.data.MusicalData;
 public class RecyclerAdapter<T extends MusicalData> extends RecyclerView.Adapter<ViewHolder>
 {
     Context mContext;
-
-    /*
-    ArrayList<String> mTitles;
-    ArrayList<String> mSubtitles;
-    ArrayList<Uri> mImageUris;      // use: ContentResolver.loadThumbnail()
-    */
-
     ArrayList<T> mData;
+    boolean endPadding;
 
     private OnItemClickListener mListener;
 
-    public RecyclerAdapter(Context context, OnItemClickListener listener, ArrayList<T> data)
+    public RecyclerAdapter(Context context, OnItemClickListener listener, ArrayList<T> data, boolean useEndPadding)
     {
         mContext = context;
         mListener = listener;
         mData = data;
+        endPadding = useEndPadding;
     }
 
     @Override
     public int getItemViewType(int position)
     {
-        if(position >= getItemCount()-1)
+        if(endPadding && position >= getItemCount()-1)
             return 1;
         else
             return 0;
@@ -69,7 +64,7 @@ public class RecyclerAdapter<T extends MusicalData> extends RecyclerView.Adapter
     @Override
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, int position)
     {
-        if( position >= mData.size() ) { return; } //if this is last item
+        if( position >= mData.size() ) { return; } //if this is end padding
 
         T datum = mData.get(position);
 
@@ -83,12 +78,9 @@ public class RecyclerAdapter<T extends MusicalData> extends RecyclerView.Adapter
     @Override
     public int getItemCount()
     {
-        return mData.size()+1;
-    }
-
-
-    public interface OnItemClickListener {
-        void onItemClicked(int position);
+        if(endPadding)
+            return mData.size()+1;
+        return mData.size();
     }
 }
 

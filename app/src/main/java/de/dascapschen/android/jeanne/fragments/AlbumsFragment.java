@@ -18,6 +18,7 @@ import java.util.Locale;
 
 import de.dascapschen.android.jeanne.NavigationRequest;
 import de.dascapschen.android.jeanne.R;
+import de.dascapschen.android.jeanne.adapters.OnItemClickListener;
 import de.dascapschen.android.jeanne.adapters.RecyclerAdapter;
 import de.dascapschen.android.jeanne.data.Album;
 import de.dascapschen.android.jeanne.singletons.AllAlbums;
@@ -25,7 +26,7 @@ import de.dascapschen.android.jeanne.singletons.AllAlbums;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class AlbumsFragment extends Fragment implements RecyclerAdapter.OnItemClickListener
+public class AlbumsFragment extends Fragment implements OnItemClickListener
 {
 
     public AlbumsFragment()
@@ -55,7 +56,7 @@ public class AlbumsFragment extends Fragment implements RecyclerAdapter.OnItemCl
 
         RecyclerView albumsView = (RecyclerView)view.findViewById(R.id.recyclerView);
         RecyclerAdapter<Album> albumsAdapter
-                = new RecyclerAdapter<>(getContext(), this, albums.data());
+                = new RecyclerAdapter<>(getContext(), this, albums.data(), true);
 
         albumsView.setAdapter(albumsAdapter);
         albumsView.setLayoutManager( new LinearLayoutManager(getContext()));

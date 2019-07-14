@@ -1,26 +1,17 @@
 package de.dascapschen.android.jeanne;
 
 import android.Manifest;
-import android.animation.TimeInterpolator;
-import android.animation.ValueAnimator;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
-import android.graphics.drawable.GradientDrawable;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.BottomSheetBehavior;
-import android.support.transition.AutoTransition;
-import android.support.transition.Scene;
-import android.support.transition.TransitionManager;
-import android.support.transition.TransitionSet;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -49,11 +40,6 @@ public class MainActivity extends AppCompatActivity
     int index = 0;
     boolean repeat = false;
     boolean shuffle = false;
-
-    ViewGroup sceneRoot;
-    float bottomSheetPosition = 0;
-    boolean bottomSheetOpen = false;
-    boolean animationRunning = false;
 
     NavController navController;
 
@@ -180,82 +166,16 @@ public class MainActivity extends AppCompatActivity
     {
         TextView songText = findViewById(R.id.bottom_song_title);
         songText.setSelected(true); // to make marquee scrolling work
+    }
 
-        //setup bottom drawer
-        BottomSheetBehavior bottomSheet =
-                BottomSheetBehavior.from( findViewById(R.id.main_bottomSheetFrame) );
+    public void onBottomSheetPressed(View v)
+    {
+        /* animate bottom sheet up to the full layout */
+    }
 
-        final GradientDrawable bottomBg = (GradientDrawable)getResources()
-                .getDrawable(R.drawable.bottomsheet_bg, getTheme());
-
-        final ValueAnimator bgAnim = ValueAnimator.ofFloat(100,0);
-        bgAnim.setDuration(100);
-        bgAnim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation)
-            {
-                bottomBg.setCornerRadius( (float)animation.getAnimatedValue() );
-            }
-        });
-
-        sceneRoot = (ViewGroup) findViewById(R.id.main_bottomSheetFrame);
-        final Scene openScene = Scene.getSceneForLayout(sceneRoot, R.layout.bottomsheet_open, this);
-        final Scene collapsedScene = Scene.getSceneForLayout(sceneRoot, R.layout.bottomsheet_closed, this);
-
-        final AutoTransition transition = new AutoTransition();
-        TimeInterpolator interpolator = new TimeInterpolator() {
-            @Override
-            public float getInterpolation(float input) {return bottomSheetPosition;}
-        };
-
-        //FIXME: hacky af
-        transition.setInterpolator(interpolator);
-        transition.setDuration(999999999);
-        transition.setOrdering( TransitionSet.ORDERING_TOGETHER );
-
-        bottomSheet.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
-            @Override
-            public void onStateChanged(@NonNull View view, int i)
-            {
-                switch( i )
-                {
-                    case BottomSheetBehavior.STATE_COLLAPSED:
-                        bottomSheetOpen = false;
-                        animationRunning = false;
-                        TransitionManager.endTransitions(sceneRoot);
-                        break;
-                    case BottomSheetBehavior.STATE_EXPANDED:
-                        bottomSheetOpen = true;
-                        animationRunning = false;
-                        TransitionManager.endTransitions(sceneRoot);
-                        break;
-                }
-            }
-
-            @Override
-            public void onSlide(@NonNull View view, float v)
-            {
-                bgAnim.setCurrentPlayTime( (long)(v * 100) );
-                if(bottomSheetOpen)
-                {
-                    if(!animationRunning)
-                    {
-                        TransitionManager.go(collapsedScene, transition);
-                        animationRunning = true;
-                    }
-                    bottomSheetPosition = 1-v;
-                }
-                else
-                {
-                    if(!animationRunning)
-                    {
-                        TransitionManager.go(openScene, transition);
-                        animationRunning = true;
-                    }
-                    bottomSheetPosition = v;
-                }
-            }
-        });
+    public void onBottomSheetHidePressed(View v)
+    {
+        /* animate bottom sheet down to the closed layout */
     }
 
     @Override
@@ -364,6 +284,8 @@ public class MainActivity extends AppCompatActivity
 
     public void onBtnPlayPressed(View v)
     {
+        if(mediaPlayer == null) return;
+
         if( mediaPlayer.isPlaying() )
         {
             pauseSong();

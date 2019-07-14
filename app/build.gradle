@@ -30,6 +30,4 @@ dependencies {
     implementation 'com.android.support:recyclerview-v7:28.0.0'
     implementation 'android.arch.navigation:navigation-fragment:1.0.0'
     implementation 'android.arch.navigation:navigation-ui:1.0.0'
-    //version 2.1 available, but gives merger error. uses androidx instead of normal android stuff
-    implementation 'io.github.luizgrp.sectionedrecyclerviewadapter:sectionedrecyclerviewadapter:1.2.0'
 }

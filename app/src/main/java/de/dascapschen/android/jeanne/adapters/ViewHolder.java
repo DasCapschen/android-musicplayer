@@ -16,9 +16,9 @@ public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickL
     TextView title;
     TextView subtitle;
 
-    RecyclerAdapter.OnItemClickListener listener;
+    OnItemClickListener listener;
 
-    public ViewHolder(@NonNull View itemView, RecyclerAdapter.OnItemClickListener listener)
+    public ViewHolder(@NonNull View itemView, OnItemClickListener listener)
     {
         super(itemView);
 

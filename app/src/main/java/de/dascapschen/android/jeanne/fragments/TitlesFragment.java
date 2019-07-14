@@ -16,6 +16,7 @@ import java.util.Locale;
 
 import de.dascapschen.android.jeanne.R;
 import de.dascapschen.android.jeanne.SongController;
+import de.dascapschen.android.jeanne.adapters.OnItemClickListener;
 import de.dascapschen.android.jeanne.adapters.RecyclerAdapter;
 import de.dascapschen.android.jeanne.data.Song;
 import de.dascapschen.android.jeanne.singletons.AllSongs;
@@ -24,7 +25,7 @@ import de.dascapschen.android.jeanne.singletons.AllSongs;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class TitlesFragment extends Fragment implements RecyclerAdapter.OnItemClickListener
+public class TitlesFragment extends Fragment implements OnItemClickListener
 {
     AllSongs songs;
 
@@ -52,7 +53,7 @@ public class TitlesFragment extends Fragment implements RecyclerAdapter.OnItemCl
 
         RecyclerView titleView = view.findViewById(R.id.recyclerView);
         RecyclerAdapter<Song> adapter
-                = new RecyclerAdapter<>(getContext(), this, songs.data());
+                = new RecyclerAdapter<>(getContext(), this, songs.data(), true);
 
         titleView.setAdapter(adapter);
         titleView.setLayoutManager( new LinearLayoutManager(getContext()) );

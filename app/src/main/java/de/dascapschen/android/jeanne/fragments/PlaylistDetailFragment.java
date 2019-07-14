@@ -16,6 +16,7 @@ import java.util.ArrayList;
 
 import de.dascapschen.android.jeanne.R;
 import de.dascapschen.android.jeanne.SongController;
+import de.dascapschen.android.jeanne.adapters.OnItemClickListener;
 import de.dascapschen.android.jeanne.adapters.RecyclerAdapter;
 import de.dascapschen.android.jeanne.data.Playlist;
 import de.dascapschen.android.jeanne.data.Song;
@@ -25,7 +26,7 @@ import de.dascapschen.android.jeanne.singletons.AllSongs;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class PlaylistDetailFragment extends Fragment implements RecyclerAdapter.OnItemClickListener
+public class PlaylistDetailFragment extends Fragment implements OnItemClickListener
 {
 
     ArrayList<Song> playlistSongs;
@@ -75,10 +76,11 @@ public class PlaylistDetailFragment extends Fragment implements RecyclerAdapter.
 
         RecyclerView recyclerView = view.findViewById(R.id.detail_recycler);
         RecyclerAdapter<Song> adapter
-                = new RecyclerAdapter<>(getContext(), this, playlistSongs);
+                = new RecyclerAdapter<>(getContext(), this, playlistSongs, true);
 
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager( new LinearLayoutManager(getContext()) );
+
     }
 
     @Override

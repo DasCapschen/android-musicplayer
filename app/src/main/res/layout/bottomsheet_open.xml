@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/bottom_layout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
 
     <ImageView
         android:id="@+id/bottom_bg_image"
@@ -84,4 +85,18 @@
         app:layout_constraintStart_toEndOf="@id/btnPlay"
         app:layout_constraintTop_toTopOf="@id/btnPlay"
         app:srcCompat="@android:drawable/ic_media_next" />
+
+    <ImageButton
+        android:id="@+id/btnHide"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#00FFFFFF"
+        android:onClick="onBottomSheetHidePressed"
+        android:rotation="-90"
+        app:layout_constraintBottom_toTopOf="@+id/bottom_album_image"
+        app:layout_constraintEnd_toEndOf="@+id/bottom_bg_image"
+        app:layout_constraintHorizontal_bias=".08"
+        app:layout_constraintStart_toStartOf="@+id/bottom_bg_image"
+        app:layout_constraintTop_toTopOf="@+id/bottom_bg_image"
+        app:srcCompat="?attr/homeAsUpIndicator" />
 </android.support.constraint.ConstraintLayout>

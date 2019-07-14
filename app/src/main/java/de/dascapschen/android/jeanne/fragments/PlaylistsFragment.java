@@ -16,6 +16,7 @@ import java.util.Locale;
 
 import de.dascapschen.android.jeanne.NavigationRequest;
 import de.dascapschen.android.jeanne.R;
+import de.dascapschen.android.jeanne.adapters.OnItemClickListener;
 import de.dascapschen.android.jeanne.adapters.RecyclerAdapter;
 import de.dascapschen.android.jeanne.data.Playlist;
 import de.dascapschen.android.jeanne.singletons.AllPlaylists;
@@ -23,7 +24,7 @@ import de.dascapschen.android.jeanne.singletons.AllPlaylists;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class PlaylistsFragment extends Fragment implements RecyclerAdapter.OnItemClickListener
+public class PlaylistsFragment extends Fragment implements OnItemClickListener
 {
 
 
@@ -50,7 +51,7 @@ public class PlaylistsFragment extends Fragment implements RecyclerAdapter.OnIte
 
         RecyclerView playlistView = (RecyclerView)view.findViewById(R.id.recyclerView);
         RecyclerAdapter<Playlist> playlistAdapter =
-                new RecyclerAdapter<>(getContext(), this, playlists.data());
+                new RecyclerAdapter<>(getContext(), this, playlists.data(), true);
 
         playlistView.setAdapter(playlistAdapter);
         playlistView.setLayoutManager( new LinearLayoutManager(getContext()) );

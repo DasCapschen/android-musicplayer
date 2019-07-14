@@ -10,29 +10,26 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import de.dascapschen.android.jeanne.R;
-import de.dascapschen.android.jeanne.SongController;
-import de.dascapschen.android.jeanne.adapters.RecyclerAdapter;
-import de.dascapschen.android.jeanne.adapters.RecyclerSection;
+import de.dascapschen.android.jeanne.adapters.OnItemClickListener;
+import de.dascapschen.android.jeanne.adapters.SectionedAdapter;
 import de.dascapschen.android.jeanne.data.Album;
 import de.dascapschen.android.jeanne.data.Artist;
 import de.dascapschen.android.jeanne.data.Song;
 import de.dascapschen.android.jeanne.singletons.AllAlbums;
 import de.dascapschen.android.jeanne.singletons.AllArtists;
-import de.dascapschen.android.jeanne.singletons.AllSongs;
-import io.github.luizgrp.sectionedrecyclerviewadapter.SectionedRecyclerViewAdapter;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class ArtistDetailFragment extends Fragment implements RecyclerAdapter.OnItemClickListener
+public class ArtistDetailFragment extends Fragment implements OnItemClickListener
 {
-    private List<Album> albumList;
-    private List<Song> songList;
+    private ArrayList<Album> albumList = new ArrayList<>();
+    private ArrayList<Song> songList = new ArrayList<>();
 
     public ArtistDetailFragment()
     {
@@ -59,34 +56,21 @@ public class ArtistDetailFragment extends Fragment implements RecyclerAdapter.On
 
         getActivity().setTitle( thisArtist.getName() );
 
-        SectionedRecyclerViewAdapter sectionAdapter = new SectionedRecyclerViewAdapter();
-
         AllAlbums allAlbums = AllAlbums.instance();
-        AllSongs allSongs = AllSongs.instance();
-
-        for( int albumID : thisArtist.getAlbumIDs() )
+        for(int albumID : thisArtist.getAlbumIDs())
         {
-            Album album = allAlbums.getByKey(albumID);
-            albumList.add(album);
-
-            ArrayList<Song> albumSongs = new ArrayList<>();
-            for(int songID : album.getSongIds())
-            {
-                Song song = allSongs.getByKey(songID);
-                albumSongs.add(song);
-                sectionAdapter.addSection(new RecyclerSection(albumSongs, this));
-            }
-            songList.addAll(albumSongs);
+            albumList.add( allAlbums.getByKey(albumID) );
         }
 
-
         RecyclerView recyclerView = view.findViewById(R.id.detail_recycler);
-        recyclerView.setAdapter(sectionAdapter);
+        SectionedAdapter adapter = new SectionedAdapter(getContext(), this, albumList, true);
+        recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
     }
 
     @Override
     public void onItemClicked(int position)
     {
+        Toast.makeText(getContext(), String.format("Clicked on Album %d", position), Toast.LENGTH_SHORT).show();
     }
 }

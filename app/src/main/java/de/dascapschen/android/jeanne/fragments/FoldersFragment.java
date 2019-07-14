@@ -13,12 +13,13 @@ import android.widget.Toast;
 import java.util.Locale;
 
 import de.dascapschen.android.jeanne.R;
+import de.dascapschen.android.jeanne.adapters.OnItemClickListener;
 import de.dascapschen.android.jeanne.adapters.RecyclerAdapter;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class FoldersFragment extends Fragment implements RecyclerAdapter.OnItemClickListener
+public class FoldersFragment extends Fragment implements OnItemClickListener
 {
 
 
