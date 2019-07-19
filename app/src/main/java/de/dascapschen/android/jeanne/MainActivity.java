@@ -13,6 +13,8 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
+import android.support.v4.media.MediaBrowserCompat;
+import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -43,11 +45,11 @@ import static de.dascapschen.android.jeanne.App.CHANNEL_ID;
 public class MainActivity extends AppCompatActivity
         implements SongController, NavigationRequest, MediaPlayer.OnCompletionListener
 {
-    MediaPlayer mediaPlayer;
+    MediaBrowserCompat mediaBrowser;
+    MediaControllerCompat mediaController;
 
     //we use a list so we can go back
     ArrayList<Song> playlist;
-    MediaSessionCompat mediaSession;
     int index = 0;
     boolean repeat = false;
     boolean shuffle = false;
@@ -147,8 +149,13 @@ public class MainActivity extends AppCompatActivity
     {
         super.onCreate(savedInstanceState);
 
+        //TODO: move notification stuff to the player service?
         notificationManager = NotificationManagerCompat.from(this);
-        mediaSession = new MediaSessionCompat(this, "MEDIASESSION");
+
+
+
+        mediaBrowser = new MediaBrowserCompat(this, );
+        mediaController = new MediaControllerCompat(this, );
 
         //ask for permission first
         if( checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
