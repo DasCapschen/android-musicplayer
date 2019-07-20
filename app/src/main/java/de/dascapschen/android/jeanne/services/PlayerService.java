@@ -39,8 +39,7 @@ public class PlayerService extends MediaBrowserServiceCompat
 
         mediaSession.setPlaybackState(stateBuilder.build());
 
-        //TODO:
-        // mediaSession.setCallback(new PlayerCallbacks());
+        mediaSession.setCallback(new PlayerCallbacks(this));
 
         //set session token so we can communicate with it (?)
         setSessionToken(mediaSession.getSessionToken());

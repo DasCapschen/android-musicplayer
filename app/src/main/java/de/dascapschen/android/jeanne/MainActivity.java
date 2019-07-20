@@ -1,21 +1,18 @@
 package de.dascapschen.android.jeanne;
 
 import android.Manifest;
-import android.app.Notification;
-import android.app.PendingIntent;
+import android.content.ComponentName;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.media.MediaBrowserCompat;
+import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
-import android.support.v4.media.session.MediaSessionCompat;
+import android.support.v4.media.session.PlaybackStateCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -35,32 +32,40 @@ import java.util.List;
 import de.dascapschen.android.jeanne.data.Album;
 import de.dascapschen.android.jeanne.data.Artist;
 import de.dascapschen.android.jeanne.data.Song;
+import de.dascapschen.android.jeanne.services.PlayerService;
 import de.dascapschen.android.jeanne.singletons.AllAlbums;
 import de.dascapschen.android.jeanne.singletons.AllArtists;
 import de.dascapschen.android.jeanne.singletons.AllPlaylists;
 import de.dascapschen.android.jeanne.singletons.AllSongs;
 
-import static de.dascapschen.android.jeanne.App.CHANNEL_ID;
-
 public class MainActivity extends AppCompatActivity
         implements SongController, NavigationRequest, MediaPlayer.OnCompletionListener
 {
     MediaBrowserCompat mediaBrowser;
-    MediaControllerCompat mediaController;
+    private final MediaBrowserCompat.ConnectionCallback connectionCallbacks = new MediaBrowserCompat.ConnectionCallback() {
+        @Override
+        public void onConnected()
+        {
+            super.onConnected();
+
+            try
+            {
+                MediaControllerCompat mediaController
+                        = new MediaControllerCompat(MainActivity.this, mediaBrowser.getSessionToken());
+
+                MediaControllerCompat.setMediaController(MainActivity.this, mediaController);
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    };
 
     //we use a list so we can go back
     ArrayList<Song> playlist;
     int index = 0;
     boolean repeat = false;
     boolean shuffle = false;
-
-    NotificationManagerCompat notificationManager;
-    boolean notificationVisible = false;
-    public static final String ACTION_PREV = "action_prev_track";
-    public static final String ACTION_PLAY = "action_play_pause";
-    public static final String ACTION_NEXT = "action_next_track";
-    public static final String ACTION_CLOSE = "action_close_notif";
-    static final int NOTIFICATION_ID = 1;
 
     NavController navController;
 
@@ -149,13 +154,28 @@ public class MainActivity extends AppCompatActivity
     {
         super.onCreate(savedInstanceState);
 
-        //TODO: move notification stuff to the player service?
-        notificationManager = NotificationManagerCompat.from(this);
+        mediaBrowser = new MediaBrowserCompat(
+                this,
+                new ComponentName(this, PlayerService.class),
+                connectionCallbacks,
+                null);
 
+        MediaControllerCompat.getMediaController(this).registerCallback(
+                new MediaControllerCompat.Callback()
+                {
+                    @Override
+                    public void onMetadataChanged(MediaMetadataCompat metadata)
+                    {
+                        super.onMetadataChanged(metadata);
+                    }
 
-
-        mediaBrowser = new MediaBrowserCompat(this, );
-        mediaController = new MediaControllerCompat(this, );
+                    @Override
+                    public void onPlaybackStateChanged(PlaybackStateCompat state)
+                    {
+                        super.onPlaybackStateChanged(state);
+                    }
+                }
+        );
 
         //ask for permission first
         if( checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
@@ -169,6 +189,34 @@ public class MainActivity extends AppCompatActivity
             queryAllData();
             setupView();
         }
+    }
+
+    @Override
+    protected void onStart()
+    {
+        super.onStart();
+        mediaBrowser.connect();
+    }
+
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
+        setVolumeControlStream(AudioManager.STREAM_MUSIC);
+    }
+
+    @Override
+    protected void onStop()
+    {
+        super.onStop();
+
+        //???????????
+        if(MediaControllerCompat.getMediaController(this) != null)
+        {
+            MediaControllerCompat.getMediaController(this).unregisterCallback(controllerCallback);
+        }
+
+        mediaBrowser.disconnect();
     }
 
     private void queryAllData()
@@ -216,61 +264,6 @@ public class MainActivity extends AppCompatActivity
             mediaPlayer = null;     //kein Plan ob release den auf null setzt.
         }
 
-        if(!notificationVisible)
-        {
-            notificationVisible = true;
-
-            //test image (apparently required)
-            //do vectors not work here either!? :(
-            Bitmap artwork = BitmapFactory.decodeResource(getResources(), R.drawable.noti);
-
-            Intent tapIntent = new Intent(this, MainActivity.class);
-            tapIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-
-            //TODO:how to make main activity receive broadcasts?
-            Intent prevIntent = new Intent(this, MainActivity.class);
-            prevIntent.setAction(ACTION_PREV);
-
-            Intent playIntent = new Intent(this, MainActivity.class);
-            playIntent.setAction(ACTION_PLAY);
-
-            Intent nextIntent = new Intent(this, MainActivity.class);
-            nextIntent.setAction(ACTION_NEXT);
-
-            Intent closeIntent = new Intent(this, MainActivity.class);
-            closeIntent.setAction(ACTION_CLOSE);
-
-            PendingIntent pendingTapIntent = PendingIntent.getActivity(this, 0, tapIntent, 0);
-            PendingIntent pendingPrevIntent = PendingIntent.getBroadcast(this, 1, prevIntent, 0);
-            PendingIntent pendingPlayIntent = PendingIntent.getBroadcast(this, 2, playIntent, 0);
-            PendingIntent pendingNextIntent = PendingIntent.getBroadcast(this, 3, nextIntent, 0);
-            PendingIntent pendingCloseIntent = PendingIntent.getBroadcast(this, 4, closeIntent, 0);
-
-            //use intents (here null) to provide actual functionality!
-            //small icon NECESSARY! (and apparently vectors don't work!)
-            //on my phone small seems to be equal to large icon
-            Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                    .setSmallIcon(R.drawable.ic_music_note)
-                    .setContentTitle("JEANNE")
-                    .setContentText("Songname")
-                    .setContentInfo("Content Info?")
-                    .setSubText("Artistname")
-                    .setLargeIcon(artwork)
-                    .addAction(R.drawable.ic_prev, "Previous", pendingPrevIntent)
-                    .addAction(R.drawable.ic_play, "Play/Pause", pendingPlayIntent)
-                    .addAction(R.drawable.ic_next, "Next", pendingNextIntent)
-                    .addAction(R.drawable.ic_close, "Close", pendingCloseIntent)
-                    .setStyle(new android.support.v4.media.app.NotificationCompat.MediaStyle()
-                        .setShowActionsInCompactView(0, 1, 2)
-                        .setMediaSession(mediaSession.getSessionToken()))
-                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                    .setOngoing(true)
-                    .setContentIntent(pendingTapIntent)
-                    .build();
-
-            //id must be unique
-            notificationManager.notify(NOTIFICATION_ID, notification);
-        }
 
         mediaPlayer = MediaPlayer.create(this, song.getUri());
         mediaPlayer.setOnCompletionListener(this);
@@ -369,15 +362,15 @@ public class MainActivity extends AppCompatActivity
 
     public void onBtnPlayPressed(View v)
     {
-        if(mediaPlayer == null) return;
+        MediaControllerCompat controller = MediaControllerCompat.getMediaController(this);
 
-        if( mediaPlayer.isPlaying() )
+        if( controller.getPlaybackState().getState() == PlaybackStateCompat.STATE_PLAYING)
         {
-            pauseSong();
+            controller.getTransportControls().pause();
         }
         else
         {
-            playSong();
+            controller.getTransportControls().play();
         }
     }
 
