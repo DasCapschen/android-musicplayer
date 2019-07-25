@@ -72,7 +72,7 @@ public class PlayerCallbacks extends MediaSessionCompat.Callback
                             .setMediaSession(mediaSession.getSessionToken())
                             .setShowActionsInCompactView(0,1,2)
                             .setShowCancelButton(true)
-                            .setCancelButtonIntent(MediaButtonReceiver.buildMediaButtonPendingIntent(PlaybackStateCompat.ACTION_STOP))
+                            .setCancelButtonIntent(MediaButtonReceiver.buildMediaButtonPendingIntent(context, PlaybackStateCompat.ACTION_STOP))
                 );
 
         service.startForeground(1, notifBuilder.build());

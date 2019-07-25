@@ -2,6 +2,7 @@ package de.dascapschen.android.jeanne.singletons;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.net.Uri;
 import android.provider.MediaStore;
 
@@ -84,11 +85,14 @@ public class AllAlbums extends SingletonBase<Album>
                 MediaStore.Audio.Artists._ID
         };
 
-        String s = MediaStore.Audio.Artists.ARTIST + "=\"" + artistName+"\"";
+        artistName = DatabaseUtils.sqlEscapeString(artistName);
+
+        String s = MediaStore.Audio.Artists.ARTIST + "= ?";
+        String[] sArgs = new String[]{artistName};
 
         Cursor artistCursor = context.getContentResolver().query(
                 MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI,
-                p, s, null, null);
+                p, s, sArgs, null);
 
         int id = 0;
 

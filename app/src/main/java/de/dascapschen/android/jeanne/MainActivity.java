@@ -16,6 +16,7 @@ import android.support.v4.media.session.PlaybackStateCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -53,11 +54,28 @@ public class MainActivity extends AppCompatActivity
                 MediaControllerCompat mediaController
                         = new MediaControllerCompat(MainActivity.this, mediaBrowser.getSessionToken());
 
+                mediaController.registerCallback(controllerCallback);
+
                 MediaControllerCompat.setMediaController(MainActivity.this, mediaController);
             }
             catch (Exception e) {
                 e.printStackTrace();
             }
+        }
+    };
+
+    private final MediaControllerCompat.Callback controllerCallback = new MediaControllerCompat.Callback()
+    {
+        @Override
+        public void onMetadataChanged(MediaMetadataCompat metadata)
+        {
+            super.onMetadataChanged(metadata);
+        }
+
+        @Override
+        public void onPlaybackStateChanged(PlaybackStateCompat state)
+        {
+            super.onPlaybackStateChanged(state);
         }
     };
 
@@ -160,23 +178,6 @@ public class MainActivity extends AppCompatActivity
                 connectionCallbacks,
                 null);
 
-        MediaControllerCompat.getMediaController(this).registerCallback(
-                new MediaControllerCompat.Callback()
-                {
-                    @Override
-                    public void onMetadataChanged(MediaMetadataCompat metadata)
-                    {
-                        super.onMetadataChanged(metadata);
-                    }
-
-                    @Override
-                    public void onPlaybackStateChanged(PlaybackStateCompat state)
-                    {
-                        super.onPlaybackStateChanged(state);
-                    }
-                }
-        );
-
         //ask for permission first
         if( checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED)
@@ -186,7 +187,7 @@ public class MainActivity extends AppCompatActivity
         }
         else
         {
-            queryAllData();
+            queryAllData(); //FIXME: this takes half a billion years on EVERY start!!
             setupView();
         }
     }
@@ -210,7 +211,6 @@ public class MainActivity extends AppCompatActivity
     {
         super.onStop();
 
-        //???????????
         if(MediaControllerCompat.getMediaController(this) != null)
         {
             MediaControllerCompat.getMediaController(this).unregisterCallback(controllerCallback);
@@ -258,16 +258,6 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void startNewSong(Song song)   //when user clicks on a song.
     {
-        if( mediaPlayer != null )
-        {
-            mediaPlayer.release();
-            mediaPlayer = null;     //kein Plan ob release den auf null setzt.
-        }
-
-
-        mediaPlayer = MediaPlayer.create(this, song.getUri());
-        mediaPlayer.setOnCompletionListener(this);
-
         TextView text = findViewById(R.id.bottom_song_title);
         ImageView image = findViewById(R.id.bottom_album_image);
 
@@ -318,11 +308,6 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void playSong()
     {
-        if(mediaPlayer == null)
-        {
-            startNewSong( playlist.get(index) );
-        }
-        mediaPlayer.start();
 
         ImageButton btn = findViewById(R.id.btnPlay);
         btn.setImageResource(R.drawable.ic_pause);
@@ -331,8 +316,6 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void pauseSong()
     {
-        mediaPlayer.pause();
-
         ImageButton btn = findViewById(R.id.btnPlay);
         btn.setImageResource(R.drawable.ic_play);
     }
