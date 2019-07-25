@@ -4,6 +4,8 @@ import android.content.Context;
 import android.media.AudioAttributes;
 import android.media.AudioFocusRequest;
 import android.media.AudioManager;
+import android.net.Uri;
+import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.media.MediaDescriptionCompat;
@@ -12,6 +14,8 @@ import android.support.v4.media.session.MediaButtonReceiver;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
+import android.util.Log;
+import android.widget.Toast;
 
 import de.dascapschen.android.jeanne.R;
 
@@ -29,6 +33,25 @@ public class PlayerCallbacks extends MediaSessionCompat.Callback
         this.service = service;
 
         notifBuilder = new NotificationCompat.Builder(service, CHANNEL_ID);
+    }
+
+    @Override
+    public void onPlayFromUri(Uri uri, Bundle extras)
+    {
+        super.onPlayFromUri(uri, extras);
+
+        try
+        {
+            //does this do what we want?
+            service.mediaPlayer.reset();
+            service.mediaPlayer.setDataSource(service, uri);
+            service.mediaPlayer.prepare();
+            service.mediaPlayer.start();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -77,7 +100,14 @@ public class PlayerCallbacks extends MediaSessionCompat.Callback
 
         service.startForeground(1, notifBuilder.build());
 
-        service.mediaPlayer.start();
+        try
+        {
+            service.mediaPlayer.start();
+        }
+        catch( IllegalStateException e )
+        {
+            Log.e("PlayerCallbacks", "OnPlay(): No Media Source Set!");
+        }
     }
 
     @Override

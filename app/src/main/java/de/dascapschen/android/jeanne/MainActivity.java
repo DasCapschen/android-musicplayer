@@ -39,8 +39,7 @@ import de.dascapschen.android.jeanne.singletons.AllArtists;
 import de.dascapschen.android.jeanne.singletons.AllPlaylists;
 import de.dascapschen.android.jeanne.singletons.AllSongs;
 
-public class MainActivity extends AppCompatActivity
-        implements SongController, NavigationRequest, MediaPlayer.OnCompletionListener
+public class MainActivity extends AppCompatActivity implements NavigationRequest
 {
     MediaBrowserCompat mediaBrowser;
     private final MediaBrowserCompat.ConnectionCallback connectionCallbacks = new MediaBrowserCompat.ConnectionCallback() {
@@ -78,12 +77,6 @@ public class MainActivity extends AppCompatActivity
             super.onPlaybackStateChanged(state);
         }
     };
-
-    //we use a list so we can go back
-    ArrayList<Song> playlist;
-    int index = 0;
-    boolean repeat = false;
-    boolean shuffle = false;
 
     NavController navController;
 
@@ -255,130 +248,30 @@ public class MainActivity extends AppCompatActivity
         /* animate bottom sheet down to the closed layout */
     }
 
-    @Override
-    public void startNewSong(Song song)   //when user clicks on a song.
-    {
-        TextView text = findViewById(R.id.bottom_song_title);
-        ImageView image = findViewById(R.id.bottom_album_image);
-
-        text.setText( song.getName() );
-        //TODO: image.setImageDrawable( song.getImage() );
-
-        playSong();
-    }
-
-    @Override
-    public void setPlaylist(ArrayList<Song> songs)
-    {
-        playlist = songs;
-    }
-
-    @Override
-    public void setPlaylist(Artist artist)
-    {
-        List<Integer> albumIds = artist.getAlbumIDs();
-        List<Integer> songIds = new ArrayList<>();
-
-        AllAlbums allAlbums = AllAlbums.instance();
-
-        for( int album : albumIds ) {
-            songIds.addAll( allAlbums.getByKey(album).getSongIds() );
-        }
-
-        AllSongs allSongs = AllSongs.instance();
-
-        playlist.clear();
-        for( int songID : songIds ){
-            playlist.add( allSongs.getByKey(songID) );
-        }
-
-    }
-
-    @Override
-    public void setPlaylist(Album album)
-    {
-        AllSongs allSongs = AllSongs.instance();
-
-        playlist.clear();
-        for( int songid : album.getSongIds() ){
-            playlist.add( allSongs.getByKey(songid) );
-        }
-    }
-
-    @Override
-    public void playSong()
-    {
-
-        ImageButton btn = findViewById(R.id.btnPlay);
-        btn.setImageResource(R.drawable.ic_pause);
-    }
-
-    @Override
-    public void pauseSong()
-    {
-        ImageButton btn = findViewById(R.id.btnPlay);
-        btn.setImageResource(R.drawable.ic_play);
-    }
-
-    @Override
-    public void nextSong()
-    {
-        if( playlist != null && !playlist.isEmpty() )
-        {
-            index = (index+1) % playlist.size();
-            startNewSong( playlist.get(index) );
-        }
-    }
-
-    @Override
-    public void prevSong()
-    {
-        if( playlist != null && !playlist.isEmpty() )
-        {
-            if( index-1 < 0 )
-                index = playlist.size()-1;  //for some reason (-1) % x does not become positive!
-            else
-                index--;
-            startNewSong( playlist.get(index) );
-        }
-    }
-
     public void onBtnPlayPressed(View v)
     {
+        ImageButton playBtn = (ImageButton)v;
         MediaControllerCompat controller = MediaControllerCompat.getMediaController(this);
 
         if( controller.getPlaybackState().getState() == PlaybackStateCompat.STATE_PLAYING)
         {
             controller.getTransportControls().pause();
+            playBtn.setImageResource(R.drawable.ic_play);
         }
         else
         {
             controller.getTransportControls().play();
+            playBtn.setImageResource(R.drawable.ic_pause);
         }
     }
 
     public void onBtnNextPressed(View v)
     {
-        nextSong();
+        MediaControllerCompat.getMediaController(this).getTransportControls().skipToNext();
     }
 
     public void onBtnPrevPressed(View v)
     {
-        prevSong();
-    }
-
-    @Override
-    public void onCompletion(MediaPlayer mp)
-    {
-        if ( playlist != null && !playlist.isEmpty()
-            && (index+1 < playlist.size() || repeat) )
-        {
-            nextSong();
-        }
-        else
-        {
-            ImageButton btn = findViewById(R.id.btnPlay);
-            btn.setImageResource(android.R.drawable.ic_media_play);
-        }
+        MediaControllerCompat.getMediaController(this).getTransportControls().skipToPrevious();
     }
 }

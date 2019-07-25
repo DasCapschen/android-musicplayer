@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -14,8 +15,8 @@ import android.widget.Button;
 
 import java.util.ArrayList;
 
+import de.dascapschen.android.jeanne.MainActivity;
 import de.dascapschen.android.jeanne.R;
-import de.dascapschen.android.jeanne.SongController;
 import de.dascapschen.android.jeanne.adapters.OnItemClickListener;
 import de.dascapschen.android.jeanne.adapters.RecyclerAdapter;
 import de.dascapschen.android.jeanne.data.Album;
@@ -54,9 +55,12 @@ public class AlbumDetailFragment extends Fragment implements OnItemClickListener
             @Override
             public void onClick(View v)
             {
-                SongController sc = (SongController) getActivity();
-                sc.setPlaylist(albumSongs);
-                sc.startNewSong(albumSongs.get(0));
+                MainActivity activity = (MainActivity) getActivity();
+                if( activity != null )
+                {
+                    //set queue somehow (only have get, add and remove single item... for loop?)
+                    MediaControllerCompat.getMediaController(activity);
+                }
             }
         });
 
@@ -84,7 +88,12 @@ public class AlbumDetailFragment extends Fragment implements OnItemClickListener
     @Override
     public void onItemClicked(int position)
     {
-        SongController sc = (SongController) getActivity();
-        sc.startNewSong( albumSongs.get(position) );
+        MainActivity activity = (MainActivity) getActivity();
+        if( activity != null )
+        {
+            MediaControllerCompat.getMediaController(activity)
+                    .getTransportControls()
+                    .playFromUri(albumSongs.get(position).getUri(), null);
+        }
     }
 }

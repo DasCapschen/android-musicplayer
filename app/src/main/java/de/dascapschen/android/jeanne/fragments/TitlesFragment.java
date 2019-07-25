@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -14,8 +15,8 @@ import android.widget.Toast;
 
 import java.util.Locale;
 
+import de.dascapschen.android.jeanne.MainActivity;
 import de.dascapschen.android.jeanne.R;
-import de.dascapschen.android.jeanne.SongController;
 import de.dascapschen.android.jeanne.adapters.OnItemClickListener;
 import de.dascapschen.android.jeanne.adapters.RecyclerAdapter;
 import de.dascapschen.android.jeanne.data.Song;
@@ -65,7 +66,12 @@ public class TitlesFragment extends Fragment implements OnItemClickListener
         Toast.makeText(getContext(), String.format(Locale.getDefault(),
                 "Playing Title %d", position), Toast.LENGTH_SHORT).show();
 
-        SongController sc = (SongController)getActivity();
-        sc.startNewSong( songs.getByIndex(position) );
+        MainActivity activity = (MainActivity)getActivity();
+        if(activity != null)
+        {
+            MediaControllerCompat.getMediaController(activity)
+                    .getTransportControls()
+                    .playFromUri( songs.getByIndex(position).getUri(), null );
+        }
     }
 }

@@ -15,7 +15,6 @@ import android.widget.Button;
 import java.util.ArrayList;
 
 import de.dascapschen.android.jeanne.R;
-import de.dascapschen.android.jeanne.SongController;
 import de.dascapschen.android.jeanne.adapters.OnItemClickListener;
 import de.dascapschen.android.jeanne.adapters.RecyclerAdapter;
 import de.dascapschen.android.jeanne.data.Playlist;
