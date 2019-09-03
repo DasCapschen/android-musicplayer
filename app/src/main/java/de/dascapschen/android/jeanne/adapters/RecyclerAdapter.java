@@ -10,17 +10,16 @@ import android.view.ViewGroup;
 import java.util.ArrayList;
 
 import de.dascapschen.android.jeanne.R;
-import de.dascapschen.android.jeanne.data.MusicalData;
 
-public class RecyclerAdapter<T extends MusicalData> extends RecyclerView.Adapter<ViewHolder>
+public abstract class RecyclerAdapter extends RecyclerView.Adapter<ViewHolder>
 {
     Context mContext;
-    ArrayList<T> mData;
+    ArrayList<Integer> mData;
     boolean endPadding;
 
     private OnItemClickListener mListener;
 
-    public RecyclerAdapter(Context context, OnItemClickListener listener, ArrayList<T> data, boolean useEndPadding)
+    public RecyclerAdapter(Context context, OnItemClickListener listener, ArrayList<Integer> data, boolean useEndPadding)
     {
         mContext = context;
         mListener = listener;
@@ -66,14 +65,10 @@ public class RecyclerAdapter<T extends MusicalData> extends RecyclerView.Adapter
     {
         if( position >= mData.size() ) { return; } //if this is end padding
 
-        T datum = mData.get(position);
-
-        viewHolder.title.setText( datum.getDescriptionTitle() );
-        viewHolder.subtitle.setText( datum.getDescriptionSubtitle() );
-
-        //load a default image if no art exists
-        viewHolder.image.setImageResource( R.drawable.ic_launcher_background );
+        setupViewholder(viewHolder, position);
     }
+
+    abstract void setupViewholder(ViewHolder viewHolder, int position);
 
     @Override
     public int getItemCount()
@@ -81,6 +76,11 @@ public class RecyclerAdapter<T extends MusicalData> extends RecyclerView.Adapter
         if(endPadding)
             return mData.size()+1;
         return mData.size();
+    }
+
+    public int getIDAtPos(int position)
+    {
+        return mData.get(position);
     }
 }
 

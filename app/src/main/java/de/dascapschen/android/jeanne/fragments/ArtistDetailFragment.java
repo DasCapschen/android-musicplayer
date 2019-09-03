@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.media.MediaMetadataCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -17,20 +18,13 @@ import java.util.ArrayList;
 import de.dascapschen.android.jeanne.R;
 import de.dascapschen.android.jeanne.adapters.OnItemClickListener;
 import de.dascapschen.android.jeanne.adapters.SectionedAdapter;
-import de.dascapschen.android.jeanne.data.Album;
-import de.dascapschen.android.jeanne.data.Artist;
-import de.dascapschen.android.jeanne.data.Song;
-import de.dascapschen.android.jeanne.singletons.AllAlbums;
-import de.dascapschen.android.jeanne.singletons.AllArtists;
+import de.dascapschen.android.jeanne.data.QueryHelper;
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class ArtistDetailFragment extends Fragment implements OnItemClickListener
 {
-    private ArrayList<Album> albumList = new ArrayList<>();
-    private ArrayList<Song> songList = new ArrayList<>();
-
     public ArtistDetailFragment()
     {
         // Required empty public constructor
@@ -52,18 +46,22 @@ public class ArtistDetailFragment extends Fragment implements OnItemClickListene
         super.onViewCreated(view, savedInstanceState);
 
         int artistID = getArguments().getInt("artistID");
-        Artist thisArtist = AllArtists.instance().getByKey(artistID);
+        MediaMetadataCompat metadata = QueryHelper.getArtistMetadataFromID(getContext(), artistID);
+        if(metadata == null) return;
 
-        getActivity().setTitle( thisArtist.getName() );
+        String artistName = metadata.getString(MediaMetadataCompat.METADATA_KEY_ARTIST);
 
-        AllAlbums allAlbums = AllAlbums.instance();
-        for(int albumID : thisArtist.getAlbumIDs())
+        getActivity().setTitle( artistName );
+
+        ArrayList<Integer> albumIDs = QueryHelper.getAlbumIDsForArtist(getContext(), artistID);
+        if(albumIDs == null)
         {
-            albumList.add( allAlbums.getByKey(albumID) );
+            Toast.makeText(getContext(), "Error loading Artists Albums!", Toast.LENGTH_SHORT).show();
+            return;
         }
 
         RecyclerView recyclerView = view.findViewById(R.id.detail_recycler);
-        SectionedAdapter adapter = new SectionedAdapter(getContext(), this, albumList, true);
+        SectionedAdapter adapter = new SectionedAdapter(getContext(), this, albumIDs, true);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
     }

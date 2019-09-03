@@ -14,7 +14,6 @@ import java.util.Locale;
 
 import de.dascapschen.android.jeanne.R;
 import de.dascapschen.android.jeanne.adapters.OnItemClickListener;
-import de.dascapschen.android.jeanne.adapters.RecyclerAdapter;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -42,23 +41,6 @@ public class FoldersFragment extends Fragment implements OnItemClickListener
     {
         super.onViewCreated(view, savedInstanceState);
 
-        /*
-        ArrayList<String> titles = new ArrayList<>();
-        ArrayList<String> subtitles = new ArrayList<>();
-        ArrayList<Uri> images = new ArrayList<>();
-
-        for(int i = 0; i < 12; i++)
-        {
-            titles.add("FOLDERS");
-            subtitles.add("FRAGMENT");
-        }
-
-        RecyclerView folderView = (RecyclerView)view.findViewById(R.id.recyclerView);
-        RecyclerAdapter folderAdapter = new RecyclerAdapter(getContext(), this, titles, subtitles, images);
-
-        folderView.setAdapter(folderAdapter);
-        folderView.setLayoutManager( new LinearLayoutManager(getContext()) );
-        */
     }
 
     @Override

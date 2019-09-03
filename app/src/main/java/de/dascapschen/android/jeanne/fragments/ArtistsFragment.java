@@ -1,6 +1,5 @@
 package de.dascapschen.android.jeanne.fragments;
 
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -17,14 +16,15 @@ import java.util.Locale;
 
 import de.dascapschen.android.jeanne.NavigationRequest;
 import de.dascapschen.android.jeanne.R;
+import de.dascapschen.android.jeanne.adapters.ArtistRecycler;
 import de.dascapschen.android.jeanne.adapters.OnItemClickListener;
-import de.dascapschen.android.jeanne.adapters.RecyclerAdapter;
-import de.dascapschen.android.jeanne.data.Artist;
-import de.dascapschen.android.jeanne.singletons.AllArtists;
+import de.dascapschen.android.jeanne.data.QueryHelper;
 
 
 public class ArtistsFragment extends Fragment implements OnItemClickListener
 {
+    ArtistRecycler adapter;
+
     public ArtistsFragment()
     {
         // Required empty public constructor
@@ -43,17 +43,12 @@ public class ArtistsFragment extends Fragment implements OnItemClickListener
     {
         super.onViewCreated(view, savedInstanceState);
 
-        ArrayList<String> titles = new ArrayList<>();
-        ArrayList<String> subtitles = new ArrayList<>();
-        ArrayList<Uri> images = new ArrayList<>();
+        ArrayList<Integer> artists = QueryHelper.getAllArtistIDs(getContext());
 
-        AllArtists artists = AllArtists.instance();
+        RecyclerView artistView = view.findViewById(R.id.recyclerView);
+        adapter = new ArtistRecycler(getContext(), this, artists, true);
 
-        RecyclerView artistView = (RecyclerView)view.findViewById(R.id.recyclerView);
-        RecyclerAdapter<Artist> artistAdapter
-                = new RecyclerAdapter<>(getContext(), this, artists.data(), true);
-
-        artistView.setAdapter(artistAdapter);
+        artistView.setAdapter(adapter);
         artistView.setLayoutManager( new LinearLayoutManager(getContext()) );
     }
 
@@ -63,11 +58,10 @@ public class ArtistsFragment extends Fragment implements OnItemClickListener
         Toast.makeText(getContext(), String.format(Locale.getDefault(),
                 "Clicked on Artist %d", position), Toast.LENGTH_SHORT).show();
 
-        AllArtists artists = AllArtists.instance();
-
         Bundle args = new Bundle();
-        args.putInt("artistID", artists.getByIndex(position).getId());
+        args.putInt("artistID", adapter.getIDAtPos(position));
 
+        //TODO: USE INTENTS
         ((NavigationRequest)getActivity()).navigate(R.id.action_to_artist, args);
     }
 }

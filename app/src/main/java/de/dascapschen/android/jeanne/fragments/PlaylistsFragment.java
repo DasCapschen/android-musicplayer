@@ -12,21 +12,20 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.Locale;
 
 import de.dascapschen.android.jeanne.NavigationRequest;
 import de.dascapschen.android.jeanne.R;
 import de.dascapschen.android.jeanne.adapters.OnItemClickListener;
-import de.dascapschen.android.jeanne.adapters.RecyclerAdapter;
-import de.dascapschen.android.jeanne.data.Playlist;
-import de.dascapschen.android.jeanne.singletons.AllPlaylists;
+import de.dascapschen.android.jeanne.adapters.PlaylistRecycler;
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class PlaylistsFragment extends Fragment implements OnItemClickListener
 {
-
+    PlaylistRecycler adapter;
 
     public PlaylistsFragment()
     {
@@ -47,13 +46,12 @@ public class PlaylistsFragment extends Fragment implements OnItemClickListener
     {
         super.onViewCreated(view, savedInstanceState);
 
-        AllPlaylists playlists = AllPlaylists.instance();
+        ArrayList<Integer> playlists = new ArrayList<>();
 
-        RecyclerView playlistView = (RecyclerView)view.findViewById(R.id.recyclerView);
-        RecyclerAdapter<Playlist> playlistAdapter =
-                new RecyclerAdapter<>(getContext(), this, playlists.data(), true);
+        RecyclerView playlistView = view.findViewById(R.id.recyclerView);
+        adapter = new PlaylistRecycler(getContext(), this, playlists, true);
 
-        playlistView.setAdapter(playlistAdapter);
+        playlistView.setAdapter(adapter);
         playlistView.setLayoutManager( new LinearLayoutManager(getContext()) );
     }
 
@@ -63,11 +61,10 @@ public class PlaylistsFragment extends Fragment implements OnItemClickListener
         Toast.makeText(getContext(), String.format(Locale.getDefault(),
                 "Clicked on Playlist %d", position), Toast.LENGTH_SHORT).show();
 
-        AllPlaylists playlists = AllPlaylists.instance();
-
         Bundle args = new Bundle();
-        args.putInt("playlistID", playlists.getByIndex(position).getId());
+        args.putInt("playlistID", adapter.getIDAtPos(position));
 
+        //TODO: USE INTENTS
         ((NavigationRequest)getActivity()).navigate( R.id.action_to_playlist, args );
     }
 }

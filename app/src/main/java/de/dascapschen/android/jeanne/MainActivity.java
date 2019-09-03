@@ -4,8 +4,6 @@ import android.Manifest;
 import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
-import android.drm.DrmStore;
-import android.media.AudioManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.media.MediaBrowserCompat;
@@ -30,10 +28,6 @@ import androidx.navigation.Navigation;
 import java.util.List;
 
 import de.dascapschen.android.jeanne.service.MusicService;
-import de.dascapschen.android.jeanne.singletons.AllAlbums;
-import de.dascapschen.android.jeanne.singletons.AllArtists;
-import de.dascapschen.android.jeanne.singletons.AllPlaylists;
-import de.dascapschen.android.jeanne.singletons.AllSongs;
 
 public class MainActivity extends AppCompatActivity implements NavigationRequest
 {
@@ -69,7 +63,6 @@ public class MainActivity extends AppCompatActivity implements NavigationRequest
         }
         else
         {
-            queryAllData();
             setupView();
         }
     }
@@ -140,7 +133,6 @@ public class MainActivity extends AppCompatActivity implements NavigationRequest
         }
         else
         {
-            queryAllData(); //FIXME: this takes half a billion years on EVERY start!!
             setupView();
         }
     }
@@ -185,14 +177,6 @@ public class MainActivity extends AppCompatActivity implements NavigationRequest
             mediaBrowser.disconnect();
             mediaBrowser = null;
         }
-    }
-
-    private void queryAllData()
-    {
-        AllArtists.initialize(this);
-        AllAlbums.initialize(this);
-        AllPlaylists.initialize(this);
-        AllSongs.initialize(this);
     }
 
     private void setupView()

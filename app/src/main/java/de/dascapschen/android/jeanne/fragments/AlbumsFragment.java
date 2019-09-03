@@ -1,7 +1,6 @@
 package de.dascapschen.android.jeanne.fragments;
 
 
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -18,16 +17,16 @@ import java.util.Locale;
 
 import de.dascapschen.android.jeanne.NavigationRequest;
 import de.dascapschen.android.jeanne.R;
+import de.dascapschen.android.jeanne.adapters.AlbumRecycler;
 import de.dascapschen.android.jeanne.adapters.OnItemClickListener;
-import de.dascapschen.android.jeanne.adapters.RecyclerAdapter;
-import de.dascapschen.android.jeanne.data.Album;
-import de.dascapschen.android.jeanne.singletons.AllAlbums;
+import de.dascapschen.android.jeanne.data.QueryHelper;
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class AlbumsFragment extends Fragment implements OnItemClickListener
 {
+    AlbumRecycler adapter;
 
     public AlbumsFragment()
     {
@@ -48,13 +47,12 @@ public class AlbumsFragment extends Fragment implements OnItemClickListener
     {
         super.onViewCreated(view, savedInstanceState);
 
-        AllAlbums albums = AllAlbums.instance();
+        ArrayList<Integer> albums = QueryHelper.getAllAlbumIDs(getContext());
 
-        RecyclerView albumsView = (RecyclerView)view.findViewById(R.id.recyclerView);
-        RecyclerAdapter<Album> albumsAdapter
-                = new RecyclerAdapter<>(getContext(), this, albums.data(), true);
+        RecyclerView albumsView = view.findViewById(R.id.recyclerView);
+        adapter = new AlbumRecycler(getContext(), this, albums, true);
 
-        albumsView.setAdapter(albumsAdapter);
+        albumsView.setAdapter(adapter);
         albumsView.setLayoutManager( new LinearLayoutManager(getContext()));
     }
 
@@ -64,11 +62,11 @@ public class AlbumsFragment extends Fragment implements OnItemClickListener
         Toast.makeText(getContext(), String.format(Locale.getDefault(),
                 "Clicked on Album %d", position), Toast.LENGTH_SHORT).show();
 
-        AllAlbums albums = AllAlbums.instance();
 
         Bundle args = new Bundle();
-        args.putInt("albumID", albums.getByIndex(position).getId());
+        args.putInt("albumID", adapter.getIDAtPos(position));
 
+        //TODO: USE INTENTS
         ((NavigationRequest)getActivity()).navigate(R.id.action_to_album, args);
     }
 }

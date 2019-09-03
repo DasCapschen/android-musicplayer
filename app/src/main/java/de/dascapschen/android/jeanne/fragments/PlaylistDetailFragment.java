@@ -1,10 +1,12 @@
 package de.dascapschen.android.jeanne.fragments;
 
 
+import android.app.DownloadManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.media.MediaMetadataCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -17,19 +19,15 @@ import java.util.ArrayList;
 
 import de.dascapschen.android.jeanne.R;
 import de.dascapschen.android.jeanne.adapters.OnItemClickListener;
-import de.dascapschen.android.jeanne.adapters.RecyclerAdapter;
-import de.dascapschen.android.jeanne.data.Playlist;
-import de.dascapschen.android.jeanne.data.Song;
-import de.dascapschen.android.jeanne.singletons.AllPlaylists;
-import de.dascapschen.android.jeanne.singletons.AllSongs;
+import de.dascapschen.android.jeanne.adapters.SongRecycler;
+import de.dascapschen.android.jeanne.data.QueryHelper;
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class PlaylistDetailFragment extends Fragment implements OnItemClickListener
 {
-
-    ArrayList<Song> playlistSongs;
+    SongRecycler adapter;
 
     public PlaylistDetailFragment()
     {
@@ -60,21 +58,19 @@ public class PlaylistDetailFragment extends Fragment implements OnItemClickListe
         });
 
         int playlistID = getArguments().getInt("playlistID");
-        Playlist thisPlaylist = AllPlaylists.instance().getByKey(playlistID);
-
-        getActivity().setTitle( thisPlaylist.getName() );
-
-        AllSongs allSongs = AllSongs.instance();
-
-        playlistSongs = new ArrayList<>();
-        for (int id : thisPlaylist.getSongIDs())
+        MediaMetadataCompat metadata = QueryHelper.getPlaylistMetadataFromID(getContext(), playlistID);
+        if(metadata == null)
         {
-            playlistSongs.add( allSongs.getByKey(id) );
+            Toast.makeText(getContext(), "Error loading Playlist", Toast.LENGTH_SHORT).show();
+            return;
         }
 
+        getActivity().setTitle( metadata.getString(MediaMetadataCompat.METADATA_KEY_TITLE) );
+
+        ArrayList<Integer> songIds = QueryHelper.getSongIDsForPlaylist(getContext(), playlistID);
+
         RecyclerView recyclerView = view.findViewById(R.id.detail_recycler);
-        RecyclerAdapter<Song> adapter
-                = new RecyclerAdapter<>(getContext(), this, playlistSongs, true);
+        adapter = new SongRecycler(getContext(), this, songIds, true);
 
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager( new LinearLayoutManager(getContext()) );

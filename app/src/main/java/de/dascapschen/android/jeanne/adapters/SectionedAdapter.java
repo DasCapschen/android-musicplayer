@@ -2,6 +2,7 @@ package de.dascapschen.android.jeanne.adapters;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.support.v4.media.MediaMetadataCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -12,18 +13,16 @@ import android.widget.Toast;
 import java.util.ArrayList;
 
 import de.dascapschen.android.jeanne.R;
-import de.dascapschen.android.jeanne.data.Album;
-import de.dascapschen.android.jeanne.data.Song;
-import de.dascapschen.android.jeanne.singletons.AllSongs;
+import de.dascapschen.android.jeanne.data.QueryHelper;
 
 public class SectionedAdapter extends RecyclerView.Adapter<SectionViewHolder>
 {
     Context context;
-    ArrayList<Album> sections;
+    ArrayList<Integer> sections;
     OnItemClickListener listener;
     boolean endPadding;
 
-    public SectionedAdapter(Context context, OnItemClickListener listener, ArrayList<Album> sections, boolean useEndPadding)
+    public SectionedAdapter(Context context, OnItemClickListener listener, ArrayList<Integer> sections, boolean useEndPadding)
     {
         this.context = context;
         this.sections = sections;
@@ -69,22 +68,18 @@ public class SectionedAdapter extends RecyclerView.Adapter<SectionViewHolder>
     {
         if( position >= sections.size() ) { return; } //if this is end padding
 
-        Album album = sections.get(position);
+        int albumID = sections.get(position);
+
+        MediaMetadataCompat metadata = QueryHelper.getAlbumMetadataFromID(context, albumID);
+        if(metadata == null) return;
 
         sectionViewHolder.albumArt.setImageResource( R.drawable.ic_launcher_background ); //TODO: album art
-        sectionViewHolder.albumTitle.setText( album.getDescriptionTitle() );
+        sectionViewHolder.albumTitle.setText( metadata.getString(MediaMetadataCompat.METADATA_KEY_ALBUM) );
 
         sectionViewHolder.nestedRecycler.setHasFixedSize(true);
         sectionViewHolder.nestedRecycler.setNestedScrollingEnabled(false);
 
-        ArrayList<Song> songList = new ArrayList<>();
-
-        AllSongs allSongs = AllSongs.instance();
-
-        for( int songID : album.getSongIds() )
-        {
-            songList.add( allSongs.getByKey(songID) );
-        }
+        ArrayList<Integer> songIDs = QueryHelper.getSongIDsForAlbum(context, albumID);
 
         OnItemClickListener nestedClickListener = new OnItemClickListener() {
             @Override
@@ -97,7 +92,7 @@ public class SectionedAdapter extends RecyclerView.Adapter<SectionViewHolder>
             }
         };
 
-        RecyclerAdapter<Song> nestedAdapter = new RecyclerAdapter<>(context, nestedClickListener, songList, false);
+        SongRecycler nestedAdapter = new SongRecycler(context, nestedClickListener, songIDs, false);
         sectionViewHolder.nestedRecycler.setLayoutManager(new LinearLayoutManager(context));
         sectionViewHolder.nestedRecycler.setAdapter(nestedAdapter);
     }

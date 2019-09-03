@@ -19,10 +19,6 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.dascapschen.android.jeanne.data.Song;
-import de.dascapschen.android.jeanne.service.MusicNotification;
-import de.dascapschen.android.jeanne.singletons.AllSongs;
-
 public class MusicService extends MediaBrowserServiceCompat
 {
     private static final String ROOT_ID = "media_root_id";
@@ -90,7 +86,10 @@ public class MusicService extends MediaBrowserServiceCompat
             result.sendResult(null);
         }
 
+
         List<MediaBrowserCompat.MediaItem> items = new ArrayList<>(); //TODO
+
+        /*
         AllSongs songs = AllSongs.instance();
         for(Song s : songs.data())
         {
@@ -102,6 +101,7 @@ public class MusicService extends MediaBrowserServiceCompat
                     .build();
             MediaBrowserCompat.MediaItem item = new MediaBrowserCompat.MediaItem(desc, MediaBrowserCompat.MediaItem.FLAG_PLAYABLE);
         }
+         */
 
         result.sendResult(items);
     }

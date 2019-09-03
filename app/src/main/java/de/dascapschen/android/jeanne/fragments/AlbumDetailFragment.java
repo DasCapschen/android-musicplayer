@@ -1,10 +1,13 @@
 package de.dascapschen.android.jeanne.fragments;
 
 
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -12,24 +15,22 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
 import de.dascapschen.android.jeanne.MainActivity;
 import de.dascapschen.android.jeanne.R;
 import de.dascapschen.android.jeanne.adapters.OnItemClickListener;
-import de.dascapschen.android.jeanne.adapters.RecyclerAdapter;
-import de.dascapschen.android.jeanne.data.Album;
-import de.dascapschen.android.jeanne.data.Song;
-import de.dascapschen.android.jeanne.singletons.AllAlbums;
-import de.dascapschen.android.jeanne.singletons.AllSongs;
+import de.dascapschen.android.jeanne.adapters.SongRecycler;
+import de.dascapschen.android.jeanne.data.QueryHelper;
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class AlbumDetailFragment extends Fragment implements OnItemClickListener
 {
-    ArrayList<Song> albumSongs;
+    SongRecycler adapter;
 
     public AlbumDetailFragment()
     {
@@ -59,27 +60,24 @@ public class AlbumDetailFragment extends Fragment implements OnItemClickListener
                 if( activity != null )
                 {
                     //set queue somehow (only have get, add and remove single item... for loop?)
-                    MediaControllerCompat.getMediaController(activity);
                 }
             }
         });
 
         int albumID = getArguments().getInt("albumID");
-        Album thisAlbum = AllAlbums.instance().getByKey(albumID);
-
-        getActivity().setTitle( thisAlbum.getName() );
-
-        AllSongs allSongs = AllSongs.instance();
-
-        albumSongs = new ArrayList<>();
-        for (int id : thisAlbum.getSongIds())
+        MediaMetadataCompat metadata = QueryHelper.getAlbumMetadataFromID(getContext(), albumID);
+        if(metadata == null)
         {
-            albumSongs.add( allSongs.getByKey(id) );
+            Toast.makeText(getContext(), "Error loading Album!", Toast.LENGTH_SHORT).show();
+            return;
         }
 
+        getActivity().setTitle( metadata.getString(MediaMetadataCompat.METADATA_KEY_ALBUM) );
+
+        ArrayList<Integer> albumSongIDs = QueryHelper.getSongIDsForAlbum(getContext(), albumID);
+
         RecyclerView recyclerView = view.findViewById(R.id.detail_recycler);
-        RecyclerAdapter<Song> adapter
-                = new RecyclerAdapter<>(getContext(), this, albumSongs, true);
+        adapter = new SongRecycler(getContext(), this, albumSongIDs, true);
 
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager( new LinearLayoutManager(getContext()) );
@@ -91,9 +89,13 @@ public class AlbumDetailFragment extends Fragment implements OnItemClickListener
         MainActivity activity = (MainActivity) getActivity();
         if( activity != null )
         {
-            MediaControllerCompat.getMediaController(activity)
-                    .getTransportControls()
-                    .playFromUri(albumSongs.get(position).getUri(), null);
+            MediaControllerCompat controller = MediaControllerCompat.getMediaController(activity);
+            if(controller != null)
+            {
+                int id = adapter.getIDAtPos(position);
+                Uri songUri = Uri.withAppendedPath( MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, ""+id );
+                controller.getTransportControls().playFromUri(songUri, null);
+            }
         }
     }
 }
