@@ -8,6 +8,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -66,12 +67,13 @@ public class TitlesFragment extends Fragment implements OnItemClickListener
         Toast.makeText(getContext(), String.format(Locale.getDefault(),
                 "Playing Title %d", position), Toast.LENGTH_SHORT).show();
 
-        MainActivity activity = (MainActivity)getActivity();
-        if(activity != null)
+        if( getActivity() != null )
         {
-            MediaControllerCompat.getMediaController(activity)
-                    .getTransportControls()
-                    .playFromUri( songs.getByIndex(position).getUri(), null );
+            MediaControllerCompat controller = MediaControllerCompat.getMediaController(getActivity());
+            if(controller != null)
+            {
+                controller.getTransportControls().playFromUri( songs.getByIndex(position).getUri(), null );
+            }
         }
     }
 }

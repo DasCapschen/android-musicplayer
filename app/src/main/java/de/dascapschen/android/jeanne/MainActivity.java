@@ -4,14 +4,14 @@ import android.Manifest;
 import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
+import android.drm.DrmStore;
 import android.media.AudioManager;
-import android.media.MediaPlayer;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
+import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -27,13 +27,9 @@ import android.widget.TextView;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import de.dascapschen.android.jeanne.data.Album;
-import de.dascapschen.android.jeanne.data.Artist;
-import de.dascapschen.android.jeanne.data.Song;
-import de.dascapschen.android.jeanne.services.PlayerService;
+import de.dascapschen.android.jeanne.service.MusicService;
 import de.dascapschen.android.jeanne.singletons.AllAlbums;
 import de.dascapschen.android.jeanne.singletons.AllArtists;
 import de.dascapschen.android.jeanne.singletons.AllPlaylists;
@@ -42,43 +38,13 @@ import de.dascapschen.android.jeanne.singletons.AllSongs;
 public class MainActivity extends AppCompatActivity implements NavigationRequest
 {
     MediaBrowserCompat mediaBrowser;
-    private final MediaBrowserCompat.ConnectionCallback connectionCallbacks = new MediaBrowserCompat.ConnectionCallback() {
-        @Override
-        public void onConnected()
-        {
-            super.onConnected();
-
-            try
-            {
-                MediaControllerCompat mediaController
-                        = new MediaControllerCompat(MainActivity.this, mediaBrowser.getSessionToken());
-
-                mediaController.registerCallback(controllerCallback);
-
-                MediaControllerCompat.setMediaController(MainActivity.this, mediaController);
-            }
-            catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    };
-
-    private final MediaControllerCompat.Callback controllerCallback = new MediaControllerCompat.Callback()
-    {
-        @Override
-        public void onMetadataChanged(MediaMetadataCompat metadata)
-        {
-            super.onMetadataChanged(metadata);
-        }
-
-        @Override
-        public void onPlaybackStateChanged(PlaybackStateCompat state)
-        {
-            super.onPlaybackStateChanged(state);
-        }
-    };
+    MediaBrowserConnectionCallbacks connectionCallbacks = new MediaBrowserConnectionCallbacks();
+    MediaBrowserSubscriptionCallbacks subscriptionCallbacks = new MediaBrowserSubscriptionCallbacks();
+    MediaControllerCallbacks controllerCallbacks = new MediaControllerCallbacks();
 
     NavController navController;
+
+    boolean isPlaying = false;
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
@@ -165,12 +131,6 @@ public class MainActivity extends AppCompatActivity implements NavigationRequest
     {
         super.onCreate(savedInstanceState);
 
-        mediaBrowser = new MediaBrowserCompat(
-                this,
-                new ComponentName(this, PlayerService.class),
-                connectionCallbacks,
-                null);
-
         //ask for permission first
         if( checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED)
@@ -189,27 +149,42 @@ public class MainActivity extends AppCompatActivity implements NavigationRequest
     protected void onStart()
     {
         super.onStart();
+
+        Log.e("ACTIVITY", "On Start Called!");
+
+        mediaBrowser = new MediaBrowserCompat(
+                this,
+                new ComponentName(this, MusicService.class),
+                connectionCallbacks,
+                null);
         mediaBrowser.connect();
     }
-
+/*
     @Override
     protected void onResume()
     {
         super.onResume();
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
     }
+ */
 
     @Override
     protected void onStop()
     {
         super.onStop();
 
-        if(MediaControllerCompat.getMediaController(this) != null)
+        MediaControllerCompat controller = MediaControllerCompat.getMediaController(this);
+        if( controller != null )
         {
-            MediaControllerCompat.getMediaController(this).unregisterCallback(controllerCallback);
+            controller.unregisterCallback(controllerCallbacks);
+            MediaControllerCompat.setMediaController(this, null);
         }
 
-        mediaBrowser.disconnect();
+        if( mediaBrowser != null )
+        {
+            mediaBrowser.disconnect();
+            mediaBrowser = null;
+        }
     }
 
     private void queryAllData()
@@ -252,16 +227,18 @@ public class MainActivity extends AppCompatActivity implements NavigationRequest
     {
         ImageButton playBtn = (ImageButton)v;
         MediaControllerCompat controller = MediaControllerCompat.getMediaController(this);
+        if(controller == null)
+        {
+            return;
+        }
 
-        if( controller.getPlaybackState().getState() == PlaybackStateCompat.STATE_PLAYING)
+        if( isPlaying )
         {
             controller.getTransportControls().pause();
-            playBtn.setImageResource(R.drawable.ic_play);
         }
         else
         {
             controller.getTransportControls().play();
-            playBtn.setImageResource(R.drawable.ic_pause);
         }
     }
 
@@ -274,4 +251,116 @@ public class MainActivity extends AppCompatActivity implements NavigationRequest
     {
         MediaControllerCompat.getMediaController(this).getTransportControls().skipToPrevious();
     }
+
+
+    class MediaBrowserConnectionCallbacks extends MediaBrowserCompat.ConnectionCallback
+    {
+
+        @Override
+        public void onConnectionFailed()
+        {
+            super.onConnectionFailed();
+            Log.e("CONNECTION", "Failed");
+        }
+
+        @Override
+        public void onConnected()
+        {
+            super.onConnected();
+
+            Log.e("CONNECTION", "Called");
+
+            // Get the token for the MediaSession
+            MediaSessionCompat.Token token = mediaBrowser.getSessionToken();
+
+            try
+            {
+                // Create a MediaControllerCompat
+                MediaControllerCompat mediaController =
+                        new MediaControllerCompat(MainActivity.this, // Context
+                                token);
+
+                // Save the controller
+                MediaControllerCompat.setMediaController(MainActivity.this, mediaController);
+
+                mediaController.registerCallback(controllerCallbacks);
+            }
+            catch(Exception e)
+            {
+                e.printStackTrace();
+            }
+
+            // Finish building the UI
+            //updateState();
+
+            mediaBrowser.subscribe(mediaBrowser.getRoot(), subscriptionCallbacks);
+        }
+    }
+
+    class MediaBrowserSubscriptionCallbacks extends MediaBrowserCompat.SubscriptionCallback
+    {
+        @Override
+        public void onChildrenLoaded(@NonNull String parentId, @NonNull List<MediaBrowserCompat.MediaItem> children)
+        {
+            super.onChildrenLoaded(parentId, children);
+
+            MediaControllerCompat controller = MediaControllerCompat.getMediaController(MainActivity.this);
+
+            //test: add all mediaItems into our playlist
+            for(MediaBrowserCompat.MediaItem item : children)
+            {
+                controller.addQueueItem(item.getDescription());
+            }
+
+            //prepare the player (now pressing play will start it)
+            controller.getTransportControls().prepare();
+        }
+    }
+
+    //callbacks for when we play a new song, or press pause etc
+    class MediaControllerCallbacks extends MediaControllerCompat.Callback
+    {
+        @Override
+        public void onPlaybackStateChanged(PlaybackStateCompat state)
+        {
+            super.onPlaybackStateChanged(state);
+
+            ImageButton playBtn = findViewById(R.id.btnPlay);
+
+            if(state != null)
+            {
+                isPlaying = state.getState() == PlaybackStateCompat.STATE_PLAYING;
+            }
+            else isPlaying = false;
+
+            if(isPlaying)
+            {
+                playBtn.setImageResource(R.drawable.ic_pause);
+            }
+            else
+            {
+                playBtn.setImageResource(R.drawable.ic_play);
+            }
+
+
+        }
+
+        @Override
+        public void onMetadataChanged(MediaMetadataCompat metadata)
+        {
+            super.onMetadataChanged(metadata);
+
+            TextView text = findViewById(R.id.bottom_song_title);
+
+            String s = metadata.getString(MediaMetadataCompat.METADATA_KEY_TITLE);
+            s = s.concat(" - ");
+            s = s.concat(metadata.getString(MediaMetadataCompat.METADATA_KEY_ARTIST));
+
+            text.setText(s);
+
+            ImageView art = findViewById(R.id.bottom_album_image);
+            art.setImageBitmap(metadata.getBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART));
+        }
+    }
+
 }

@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -54,9 +55,7 @@ public class PlaylistDetailFragment extends Fragment implements OnItemClickListe
             @Override
             public void onClick(View v)
             {
-                SongController sc = (SongController) getActivity();
-                sc.setPlaylist(playlistSongs);
-                sc.startNewSong(playlistSongs.get(0));
+                Toast.makeText(getContext(), "Playing All...", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -85,7 +84,6 @@ public class PlaylistDetailFragment extends Fragment implements OnItemClickListe
     @Override
     public void onItemClicked(int position)
     {
-        SongController sc = (SongController) getActivity();
-        sc.startNewSong( playlistSongs.get(position) );
+        Toast.makeText(getContext(), String.format("Playing song %d", position), Toast.LENGTH_SHORT).show();
     }
 }

@@ -48,10 +48,6 @@ public class AlbumsFragment extends Fragment implements OnItemClickListener
     {
         super.onViewCreated(view, savedInstanceState);
 
-        ArrayList<String> titles = new ArrayList<>();
-        ArrayList<String> subtitles = new ArrayList<>();
-        ArrayList<Uri> images = new ArrayList<>();
-
         AllAlbums albums = AllAlbums.instance();
 
         RecyclerView albumsView = (RecyclerView)view.findViewById(R.id.recyclerView);
