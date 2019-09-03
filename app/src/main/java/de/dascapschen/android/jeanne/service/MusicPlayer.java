@@ -1,6 +1,7 @@
 package de.dascapschen.android.jeanne.service;
 
 import android.content.BroadcastReceiver;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -14,11 +15,13 @@ import android.support.v4.media.session.PlaybackStateCompat;
 import android.util.Log;
 import android.widget.Toast;
 
+import de.dascapschen.android.jeanne.data.QueryHelper;
+
 public class MusicPlayer implements AudioManager.OnAudioFocusChangeListener
 {
     private MediaPlayer mediaPlayer;
     private MediaMetadataCompat currentMedia;
-    private String currentFilename;
+    private Uri currentURI;
     private int state;
     private boolean currentMediaCompleted;
 
@@ -103,11 +106,24 @@ public class MusicPlayer implements AudioManager.OnAudioFocusChangeListener
 
     public void playFromUri(Uri uri)
     {
+        boolean mediaChanged = !uri.equals(currentURI);
+
+        if(!mediaChanged)
+        {
+            if(!isPlaying()) play();
+            return;
+        }
+
         if(mediaPlayer != null)
         {
             mediaPlayer.release();
             mediaPlayer = null;
         }
+
+        currentURI = uri;
+
+        //int mediaID = (int)ContentUris.parseId(uri);
+        //currentMedia = QueryHelper.getSongMetadataFromID(appContext, mediaID);
 
         initializeMediaPlayer();
 
@@ -125,48 +141,6 @@ public class MusicPlayer implements AudioManager.OnAudioFocusChangeListener
             e.printStackTrace();
         }
     }
-/*
-    private void playFile(String filename)
-    {
-        boolean mediaChanged = !filename.equals(currentFilename);
-        if(currentMediaCompleted)
-        {
-            mediaChanged = true;
-            currentMediaCompleted = false;
-        }
-
-        if(!mediaChanged)
-        {
-            if(!isPlaying()) play();
-            return;
-        }
-        else if (mediaPlayer != null)
-        {
-            mediaPlayer.release();
-            mediaPlayer = null;
-        }
-
-        currentFilename = filename;
-
-        initializeMediaPlayer();
-
-        try
-        {
-            AssetFileDescriptor fd = appContext.getAssets().openFd(currentFilename);
-            mediaPlayer.setDataSource(
-                    fd.getFileDescriptor(),
-                    fd.getStartOffset(),
-                    fd.getLength()
-            );
-            mediaPlayer.prepare();
-            play();
-        }
-        catch(Exception e)
-        {
-            e.printStackTrace();
-        }
-    }
-*/
 
     public void pause()
     {

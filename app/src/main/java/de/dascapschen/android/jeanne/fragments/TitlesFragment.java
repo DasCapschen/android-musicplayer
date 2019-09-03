@@ -74,7 +74,8 @@ public class TitlesFragment extends Fragment implements OnItemClickListener
             {
                 int id = adapter.getIDAtPos(position);
                 Uri songUri = Uri.withAppendedPath( MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, ""+id );
-                controller.getTransportControls().playFromUri( songUri, null );
+                //controller.addQueueItem( QueryHelper.getSongMetadataFromID(getContext(), id).getDescription());
+                controller.getTransportControls().playFromUri(songUri, null);
             }
         }
     }

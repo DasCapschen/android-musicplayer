@@ -100,7 +100,7 @@ public class MusicNotification
         }
         else
         {
-            builder.setLargeIcon( metadata.getBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART) )
+            builder//TODO: .setLargeIcon( metadata.getBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART) )
                 .setContentTitle( metadata.getDescription().getTitle() )
                 .setContentText( metadata.getDescription().getSubtitle() );
         }

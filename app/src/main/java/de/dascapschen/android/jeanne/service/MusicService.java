@@ -1,6 +1,7 @@
 package de.dascapschen.android.jeanne.service;
 
 import android.app.Notification;
+import android.content.ContentUris;
 import android.content.Intent;
 import android.media.browse.MediaBrowser;
 import android.net.Uri;
@@ -16,8 +17,11 @@ import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.util.Log;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
+
+import de.dascapschen.android.jeanne.data.QueryHelper;
 
 public class MusicService extends MediaBrowserServiceCompat
 {
@@ -178,7 +182,7 @@ public class MusicService extends MediaBrowserServiceCompat
             if(queueIndex < 0 && playlist.isEmpty()) return;
 
             String mediaID = playlist.get(queueIndex).getDescription().getMediaId();
-            //TODO: preparedMedia = MusicLibrary.getMetadata(MusicService.this, mediaID);
+            preparedMedia = QueryHelper.getSongMetadataFromID(MusicService.this, Integer.valueOf(mediaID));
 
             mediaSession.setMetadata(preparedMedia);
             if(!mediaSession.isActive()) mediaSession.setActive(true);
@@ -198,7 +202,19 @@ public class MusicService extends MediaBrowserServiceCompat
         @Override
         public void onPlayFromUri(Uri uri, Bundle extras)
         {
-            player.playFromUri(uri);
+            //empty playlist
+            playlist = new ArrayList<>();
+            queueIndex = 0;
+
+            //add new playlist item
+            int id = (int)ContentUris.parseId(uri);
+            onAddQueueItem(QueryHelper.getSongMetadataFromID(MusicService.this, id).getDescription());
+
+            onPrepare();
+
+            //play it
+            player.playFromMedia(preparedMedia);
+            //player.playFromUri(uri);
         }
 
         @Override
