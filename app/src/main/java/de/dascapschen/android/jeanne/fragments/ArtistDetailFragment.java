@@ -6,6 +6,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.media.MediaMetadataCompat;
+import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -15,16 +16,20 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
+import de.dascapschen.android.jeanne.MainActivity;
 import de.dascapschen.android.jeanne.R;
 import de.dascapschen.android.jeanne.adapters.OnItemClickListener;
 import de.dascapschen.android.jeanne.adapters.SectionedAdapter;
 import de.dascapschen.android.jeanne.data.QueryHelper;
+import de.dascapschen.android.jeanne.service.MusicService;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class ArtistDetailFragment extends Fragment implements OnItemClickListener
+public class ArtistDetailFragment extends Fragment implements OnItemClickListener, SectionedAdapter.NestedItemClickListener
 {
+    SectionedAdapter adapter;
+
     public ArtistDetailFragment()
     {
         // Required empty public constructor
@@ -61,14 +66,56 @@ public class ArtistDetailFragment extends Fragment implements OnItemClickListene
         }
 
         RecyclerView recyclerView = view.findViewById(R.id.detail_recycler);
-        SectionedAdapter adapter = new SectionedAdapter(getContext(), this, albumIDs, true);
+        adapter = new SectionedAdapter(getContext(), this, this, albumIDs, true);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
     }
 
+    //Section Click Listener (Albums)
     @Override
     public void onItemClicked(int position)
     {
-        Toast.makeText(getContext(), String.format("Clicked on Album %d", position), Toast.LENGTH_SHORT).show();
+        MainActivity activity = (MainActivity) getActivity();
+        if( activity != null )
+        {
+            MediaControllerCompat controller = MediaControllerCompat.getMediaController(activity);
+            if(controller != null)
+            {
+                //put all the album songIDs into our play queue
+                Bundle data = new Bundle();
+                data.putIntegerArrayList(MusicService.CUSTOM_ACTION_DATA_KEY,
+                        QueryHelper.getSongIDsForAlbum(getContext(), adapter.getIDAtPos(position)));
+
+                controller.getTransportControls()
+                        .sendCustomAction(MusicService.CUSTOM_ACTION_SET_QUEUE, data);
+
+                //changes to item at index and plays it
+                controller.getTransportControls().play();
+            }
+        }
+    }
+
+    //Nested Click Listener (Songs)
+    @Override
+    public void onItemClicked(int position, int section)
+    {
+        MainActivity activity = (MainActivity) getActivity();
+        if( activity != null )
+        {
+            MediaControllerCompat controller = MediaControllerCompat.getMediaController(activity);
+            if(controller != null)
+            {
+                //put all the album songIDs into our play queue
+                Bundle data = new Bundle();
+                data.putIntegerArrayList(MusicService.CUSTOM_ACTION_DATA_KEY,
+                        QueryHelper.getSongIDsForAlbum(getContext(), adapter.getIDAtPos(section)));
+
+                controller.getTransportControls()
+                        .sendCustomAction(MusicService.CUSTOM_ACTION_SET_QUEUE, data);
+
+                //changes to item at index and plays it
+                controller.getTransportControls().skipToQueueItem( position );
+            }
+        }
     }
 }

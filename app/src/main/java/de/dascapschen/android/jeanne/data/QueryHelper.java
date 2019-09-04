@@ -17,7 +17,7 @@ public class QueryHelper
         Uri mediaUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
 
         String[] projection = {
-                MediaStore.Audio.Media._ID,
+                "DISTINCT " + MediaStore.Audio.Media._ID,
                 MediaStore.Audio.Media.TITLE //needed for sort
         };
 
@@ -47,7 +47,7 @@ public class QueryHelper
         Uri mediaUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
 
         String[] projection = {
-                MediaStore.Audio.Media._ID,
+                "DISTINCT " + MediaStore.Audio.Media._ID,
                 MediaStore.Audio.Media.TITLE, //needed for sort
                 MediaStore.Audio.Media.ALBUM_ID //needed for projection
         };
@@ -81,7 +81,7 @@ public class QueryHelper
         Uri mediaUri = MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI;
 
         String[] projection = {
-                MediaStore.Audio.Artists._ID,
+                "DISTINCT " + MediaStore.Audio.Artists._ID,
                 MediaStore.Audio.Artists.ARTIST //needed for sort
         };
 
@@ -112,7 +112,7 @@ public class QueryHelper
 
         //TODO: there's _ID and ALBUM_ID, which to use!?
         String[] projection = {
-                MediaStore.Audio.Albums._ID,
+                "DISTINCT " + MediaStore.Audio.Albums._ID,
                 MediaStore.Audio.Albums.ALBUM //needed for sort
         };
 
@@ -143,7 +143,7 @@ public class QueryHelper
         Uri mediaUri = MediaStore.Audio.Artists.Albums.getContentUri("external", artistID);
 
         String[] projection = {
-                "_id",  //ALBUM_ID as provided by MediaStore does not work... use _ID (which doesn't exist in MediaStore)
+                "DISTINCT _id",  //ALBUM_ID as provided by MediaStore does not work... use _ID (which doesn't exist in MediaStore)
                 MediaStore.Audio.Artists.Albums.ALBUM //needed for sort
         };
 
@@ -173,7 +173,7 @@ public class QueryHelper
         Uri mediaUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
 
         String[] projection = {
-                MediaStore.Audio.Media._ID,
+                "DISTINCT " + MediaStore.Audio.Media._ID,
                 MediaStore.Audio.Media.TITLE,
                 MediaStore.Audio.Media.ARTIST,
                 MediaStore.Audio.Media.ALBUM,
@@ -213,7 +213,7 @@ public class QueryHelper
         Uri mediaUri = MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI;
 
         String[] projection = {
-                MediaStore.Audio.Albums._ID,
+                "DISTINCT " + MediaStore.Audio.Albums._ID,
                 MediaStore.Audio.Albums.ALBUM,
                 MediaStore.Audio.Albums.ARTIST,
                 MediaStore.Audio.Albums.NUMBER_OF_SONGS,
@@ -248,7 +248,7 @@ public class QueryHelper
         Uri mediaUri = MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI;
 
         String[] projection = {
-                MediaStore.Audio.Artists._ID,
+                "DISTINCT " + MediaStore.Audio.Artists._ID,
                 MediaStore.Audio.Artists.ARTIST,
                 MediaStore.Audio.Artists.NUMBER_OF_ALBUMS,
         };

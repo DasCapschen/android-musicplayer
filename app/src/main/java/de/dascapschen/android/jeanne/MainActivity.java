@@ -142,7 +142,7 @@ public class MainActivity extends AppCompatActivity implements NavigationRequest
     {
         super.onStart();
 
-        Log.e("ACTIVITY", "On Start Called!");
+        Log.i("ACTIVITY", "On Start Called!");
 
         mediaBrowser = new MediaBrowserCompat(
                 this,
@@ -252,7 +252,7 @@ public class MainActivity extends AppCompatActivity implements NavigationRequest
         {
             super.onConnected();
 
-            Log.e("CONNECTION", "Called");
+            Log.i("CONNECTION", "Called");
 
             // Get the token for the MediaSession
             MediaSessionCompat.Token token = mediaBrowser.getSessionToken();

@@ -9,8 +9,10 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
+import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,12 +20,14 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import de.dascapschen.android.jeanne.MainActivity;
 import de.dascapschen.android.jeanne.R;
 import de.dascapschen.android.jeanne.adapters.OnItemClickListener;
 import de.dascapschen.android.jeanne.adapters.SongRecycler;
 import de.dascapschen.android.jeanne.data.QueryHelper;
+import de.dascapschen.android.jeanne.service.MusicService;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -31,6 +35,7 @@ import de.dascapschen.android.jeanne.data.QueryHelper;
 public class AlbumDetailFragment extends Fragment implements OnItemClickListener
 {
     SongRecycler adapter;
+    int albumID;
 
     public AlbumDetailFragment()
     {
@@ -64,7 +69,7 @@ public class AlbumDetailFragment extends Fragment implements OnItemClickListener
             }
         });
 
-        int albumID = getArguments().getInt("albumID");
+        albumID = getArguments().getInt("albumID");
         MediaMetadataCompat metadata = QueryHelper.getAlbumMetadataFromID(getContext(), albumID);
         if(metadata == null)
         {
@@ -92,9 +97,15 @@ public class AlbumDetailFragment extends Fragment implements OnItemClickListener
             MediaControllerCompat controller = MediaControllerCompat.getMediaController(activity);
             if(controller != null)
             {
-                int id = adapter.getIDAtPos(position);
-                Uri songUri = Uri.withAppendedPath( MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, ""+id );
-                controller.getTransportControls().playFromUri(songUri, null);
+                //put all the album songIDs into our play queue
+                Bundle data = new Bundle();
+                data.putIntegerArrayList(MusicService.CUSTOM_ACTION_DATA_KEY, QueryHelper.getSongIDsForAlbum(getContext(), albumID));
+
+                controller.getTransportControls()
+                        .sendCustomAction(MusicService.CUSTOM_ACTION_SET_QUEUE, data);
+
+                //changes to item at index and plays it
+                controller.getTransportControls().skipToQueueItem( position );
             }
         }
     }

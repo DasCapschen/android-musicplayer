@@ -8,6 +8,7 @@ import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v7.widget.LinearLayoutManager;
@@ -25,6 +26,7 @@ import de.dascapschen.android.jeanne.R;
 import de.dascapschen.android.jeanne.adapters.OnItemClickListener;
 import de.dascapschen.android.jeanne.adapters.SongRecycler;
 import de.dascapschen.android.jeanne.data.QueryHelper;
+import de.dascapschen.android.jeanne.service.MusicService;
 
 
 /**
@@ -75,34 +77,16 @@ public class TitlesFragment extends Fragment implements OnItemClickListener
             MediaControllerCompat controller = MediaControllerCompat.getMediaController(getActivity());
             if(controller != null)
             {
-                int id = adapter.getIDAtPos(position);
-                Uri songUri = Uri.withAppendedPath( MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, ""+id );
-                //controller.addQueueItem( QueryHelper.getSongMetadataFromID(getContext(), id).getDescription());
+                //put ALL songs into play query
+                Bundle data = new Bundle();
+                data.putIntegerArrayList(MusicService.CUSTOM_ACTION_DATA_KEY, QueryHelper.getAllSongIDs(getContext()));
 
+                //set the query
+                controller.getTransportControls()
+                        .sendCustomAction(MusicService.CUSTOM_ACTION_SET_QUEUE, data);
 
-                /*TODO: this is horrible
-                //clear playlist
-                List<MediaSessionCompat.QueueItem> currentQueue = controller.getQueue();
-                if(currentQueue != null && !currentQueue.isEmpty())
-                {
-                    for( MediaSessionCompat.QueueItem item : currentQueue )
-                    {
-                        controller.removeQueueItem(item.getDescription());
-                    }
-                }
-
-                //fill playlist with *ALL* songs
-                ArrayList<Integer> songIDs = QueryHelper.getAllSongIDs(getContext());
-                for( int songID : songIDs )
-                {
-
-                    controller.addQueueItem( QueryHelper.getSongMetadataFromID(getContext(), songID).getDescription() );
-                }
-
-                controller.getTransportControls().skipToQueueItem(position);
-                */
-
-                controller.getTransportControls().playFromUri(songUri, null);
+                //changes to item at index and plays it (we use the id as an index instead)
+                controller.getTransportControls().skipToQueueItem( position );
             }
         }
     }

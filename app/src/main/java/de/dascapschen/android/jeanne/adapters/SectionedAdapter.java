@@ -1,8 +1,10 @@
 package de.dascapschen.android.jeanne.adapters;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.media.MediaMetadataCompat;
+import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -12,21 +14,25 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
+import de.dascapschen.android.jeanne.MainActivity;
 import de.dascapschen.android.jeanne.R;
 import de.dascapschen.android.jeanne.data.QueryHelper;
+import de.dascapschen.android.jeanne.service.MusicService;
 
 public class SectionedAdapter extends RecyclerView.Adapter<SectionViewHolder>
 {
     Context context;
     ArrayList<Integer> sections;
     OnItemClickListener listener;
+    NestedItemClickListener nestedListener;
     boolean endPadding;
 
-    public SectionedAdapter(Context context, OnItemClickListener listener, ArrayList<Integer> sections, boolean useEndPadding)
+    public SectionedAdapter(Context context, OnItemClickListener listener, NestedItemClickListener nestedListener, ArrayList<Integer> sections, boolean useEndPadding)
     {
         this.context = context;
         this.sections = sections;
         this.listener = listener;
+        this.nestedListener = nestedListener;
         this.endPadding = useEndPadding;
     }
 
@@ -85,10 +91,7 @@ public class SectionedAdapter extends RecyclerView.Adapter<SectionViewHolder>
             @Override
             public void onItemClicked(int position)
             {
-                Toast.makeText(context,
-                        String.format("Clicked on Song %d in section %d",
-                                position, sectionViewHolder.getAdapterPosition()),
-                        Toast.LENGTH_SHORT).show();
+                nestedListener.onItemClicked(position, sectionViewHolder.getAdapterPosition());
             }
         };
 
@@ -103,5 +106,15 @@ public class SectionedAdapter extends RecyclerView.Adapter<SectionViewHolder>
         if(endPadding)
             return sections.size()+1;
         return sections.size();
+    }
+
+    public int getIDAtPos(int position)
+    {
+        return sections.get(position);
+    }
+
+    public interface NestedItemClickListener
+    {
+        void onItemClicked(int position, int section);
     }
 }

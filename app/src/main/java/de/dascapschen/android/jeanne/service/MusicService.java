@@ -28,6 +28,11 @@ public class MusicService extends MediaBrowserServiceCompat
     private static final String ROOT_ID = "media_root_id";
     private static final String EMPTY_ROOT_ID = "empty_root_id";
 
+    public static final String CUSTOM_ACTION_CLEAR_QUEUE = "clear_play_queue";
+    public static final String CUSTOM_ACTION_APPEND_QUEUE = "append_play_queue";
+    public static final String CUSTOM_ACTION_SET_QUEUE = "set_play_queue";
+    public static final String CUSTOM_ACTION_DATA_KEY = "play_queue_data";
+
     private MediaSessionCompat mediaSession;
     private PlaybackStateCompat.Builder stateBuilder;
 
@@ -157,33 +162,32 @@ public class MusicService extends MediaBrowserServiceCompat
 
     class MusicSessionCallbacks extends MediaSessionCompat.Callback
     {
-        private List<MediaSessionCompat.QueueItem> playlist = new ArrayList<>();
+        private List<Integer> playlist = new ArrayList<>();
         private int queueIndex = -1;
         private MediaMetadataCompat preparedMedia;
 
         @Override
         public void onAddQueueItem(MediaDescriptionCompat description)
         {
-            playlist.add(new MediaSessionCompat.QueueItem(description, description.hashCode()));
-            if(queueIndex == -1) queueIndex = 0;
-            mediaSession.setQueue(playlist);
+            //playlist.add( new MediaSessionCompat.QueueItem(description, description.hashCode()) );
+            //if(queueIndex == -1) queueIndex = 0;
+            //mediaSession.setQueue(playlist);
         }
 
         @Override
         public void onRemoveQueueItem(MediaDescriptionCompat description)
         {
-            playlist.remove(new MediaSessionCompat.QueueItem(description, description.hashCode()));
-            if(playlist.isEmpty()) queueIndex = -1;
-            mediaSession.setQueue(playlist);
+            //playlist.remove(new MediaSessionCompat.QueueItem(description, description.hashCode()));
+            //if(playlist.isEmpty()) queueIndex = -1;
+            //mediaSession.setQueue(playlist);
         }
 
         @Override
         public void onPrepare()
         {
-            if(queueIndex < 0 && playlist.isEmpty()) return;
+            if(queueIndex < 0 || playlist.isEmpty()) return;
 
-            String mediaID = playlist.get(queueIndex).getDescription().getMediaId();
-            preparedMedia = QueryHelper.getSongMetadataFromID(MusicService.this, Integer.valueOf(mediaID));
+            preparedMedia = QueryHelper.getSongMetadataFromID(MusicService.this, playlist.get(queueIndex));
 
             mediaSession.setMetadata(preparedMedia);
             if(!mediaSession.isActive()) mediaSession.setActive(true);
@@ -192,7 +196,7 @@ public class MusicService extends MediaBrowserServiceCompat
         @Override
         public void onPlay()
         {
-            Log.e("CALLBACK", "PLAY");
+            Log.i("CALLBACK", "PLAY");
             if(playlist.isEmpty()) return;
 
             if(preparedMedia == null) onPrepare();
@@ -209,20 +213,20 @@ public class MusicService extends MediaBrowserServiceCompat
 
             //add new playlist item
             int id = (int)ContentUris.parseId(uri);
-            onAddQueueItem(QueryHelper.getSongMetadataFromID(MusicService.this, id).getDescription());
+            playlist.add(id);
+            //onAddQueueItem(QueryHelper.getSongMetadataFromID(MusicService.this, id).getDescription());
 
             onPrepare();
 
             //play it
             player.playFromMedia(preparedMedia);
-            //player.playFromUri(uri);
         }
 
         @Override
         public void onPause()
         {
             player.pause();
-            Log.e("CALLBACK", "PAUSE");
+            Log.i("CALLBACK", "PAUSE");
         }
 
         @Override
@@ -235,7 +239,7 @@ public class MusicService extends MediaBrowserServiceCompat
         @Override
         public void onSkipToNext()
         {
-            Log.e("CALLBACK", "NEXT");
+            Log.i("CALLBACK", "NEXT");
             queueIndex = ++queueIndex % playlist.size();
             preparedMedia = null;
             onPlay();
@@ -244,11 +248,55 @@ public class MusicService extends MediaBrowserServiceCompat
         @Override
         public void onSkipToPrevious()
         {
-            Log.e("CALLBACK", "PREV");
+            Log.i("CALLBACK", "PREV");
             if(queueIndex > 0) queueIndex--;
             else queueIndex = playlist.size() - 1;
             preparedMedia = null;
             onPlay();
+        }
+
+        @Override
+        public void onSkipToQueueItem(long id)
+        {
+            if(id < 0 || id > playlist.size())
+            {
+                Log.w("SKIP_QUEUE", "Out of Range");
+                return;
+            }
+            queueIndex = (int)id;
+            preparedMedia = null;
+            onPlay();
+        }
+
+        @Override
+        public void onCustomAction(String action, Bundle extras)
+        {
+            ArrayList<Integer> songIDs = extras.getIntegerArrayList(CUSTOM_ACTION_DATA_KEY);
+
+            switch (action)
+            {
+                case CUSTOM_ACTION_CLEAR_QUEUE:
+                    playlist = new ArrayList<>();
+                    break;
+                case CUSTOM_ACTION_APPEND_QUEUE:
+                    if(songIDs == null || songIDs.isEmpty()) return;
+                    playlist.addAll(songIDs);
+                    break;
+                case CUSTOM_ACTION_SET_QUEUE:
+                    if(songIDs == null|| songIDs.isEmpty())
+                    {
+                        Log.w("CUSTOM_ACTION", "Use CLEAR_QUEUE instead of setting NULL/Empty!");
+                        return;
+                    }
+                    playlist = songIDs;
+                    break;
+                default:
+                    break;
+            }
+
+            queueIndex = 0;
+            preparedMedia = null;
+            //mediaSession.setQueue(playlist);
         }
     }
 }
