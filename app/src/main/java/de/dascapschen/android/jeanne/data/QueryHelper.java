@@ -142,8 +142,9 @@ public class QueryHelper
     {
         Uri mediaUri = MediaStore.Audio.Artists.Albums.getContentUri("external", artistID);
 
+        //FIXME: "Invalid Column DISTINCT _id"
         String[] projection = {
-                "DISTINCT _id",  //ALBUM_ID as provided by MediaStore does not work... use _ID (which doesn't exist in MediaStore)
+                /*"DISTINCT " +*/ "_id",  //ALBUM_ID as provided by MediaStore does not work... use _ID (which doesn't exist in MediaStore)
                 MediaStore.Audio.Artists.Albums.ALBUM //needed for sort
         };
 
