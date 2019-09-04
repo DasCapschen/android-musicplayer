@@ -55,8 +55,10 @@ public class MusicService extends MediaBrowserServiceCompat
         // Set an initial PlaybackState with ACTION_PLAY, so media buttons can start the player
         stateBuilder = new PlaybackStateCompat.Builder()
                 .setActions(
-                        PlaybackStateCompat.ACTION_PLAY |
-                                PlaybackStateCompat.ACTION_PLAY_PAUSE);
+                        PlaybackStateCompat.ACTION_PLAY
+                        | PlaybackStateCompat.ACTION_PLAY_PAUSE
+                        | PlaybackStateCompat.ACTION_PAUSE);
+
         mediaSession.setPlaybackState(stateBuilder.build());
 
         setSessionToken(mediaSession.getSessionToken());
@@ -158,7 +160,6 @@ public class MusicService extends MediaBrowserServiceCompat
         private List<MediaSessionCompat.QueueItem> playlist = new ArrayList<>();
         private int queueIndex = -1;
         private MediaMetadataCompat preparedMedia;
-
 
         @Override
         public void onAddQueueItem(MediaDescriptionCompat description)
