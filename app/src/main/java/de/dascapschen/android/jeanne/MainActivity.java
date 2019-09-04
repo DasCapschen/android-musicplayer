@@ -6,6 +6,9 @@ import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.transition.AutoTransition;
+import android.support.transition.Scene;
+import android.support.transition.TransitionManager;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
@@ -13,11 +16,16 @@ import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.transition.TransitionSet;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -25,20 +33,39 @@ import android.widget.TextView;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.List;
 
+import de.dascapschen.android.jeanne.adapters.OnItemClickListener;
+import de.dascapschen.android.jeanne.adapters.SongRecycler;
 import de.dascapschen.android.jeanne.service.MusicService;
 
 public class MainActivity extends AppCompatActivity implements NavigationRequest
 {
     MediaBrowserCompat mediaBrowser;
     MediaBrowserConnectionCallbacks connectionCallbacks = new MediaBrowserConnectionCallbacks();
-    MediaBrowserSubscriptionCallbacks subscriptionCallbacks = new MediaBrowserSubscriptionCallbacks();
     MediaControllerCallbacks controllerCallbacks = new MediaControllerCallbacks();
+    OnItemClickListener onQueueItemClickedListener = new OnItemClickListener()
+    {
+        @Override
+        public void onItemClicked(int position)
+        {
+            MediaControllerCompat
+                    .getMediaController(MainActivity.this)
+                    .getTransportControls()
+                    .skipToQueueItem( position );
+        }
+    };
 
     NavController navController;
 
     boolean isPlaying = false;
+
+    ViewGroup bottomRoot;
+    Scene bottomClosed;
+    Scene bottomOpen;
+    boolean isBottomOpen = false;
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
@@ -112,7 +139,11 @@ public class MainActivity extends AppCompatActivity implements NavigationRequest
     @Override
     public void onBackPressed()
     {
-        if(navController.getCurrentDestination().getId() != R.id.destination_main)
+        if(isBottomOpen)
+        {
+            onBottomSheetHidePressed(findViewById(R.id.btnHide));
+        }
+        else if(navController.getCurrentDestination().getId() != R.id.destination_main)
         {
             back();
         }
@@ -195,16 +226,73 @@ public class MainActivity extends AppCompatActivity implements NavigationRequest
     {
         TextView songText = findViewById(R.id.bottom_song_title);
         songText.setSelected(true); // to make marquee scrolling work
+
+        bottomRoot = findViewById(R.id.main_bottomSheetFrame);
+        bottomOpen = Scene.getSceneForLayout(bottomRoot, R.layout.bottomsheet_open, this);
+        bottomClosed = Scene.getSceneForLayout(bottomRoot, R.layout.bottomsheet_closed, this);
     }
 
     public void onBottomSheetPressed(View v)
     {
         /* animate bottom sheet up to the full layout */
+        AutoTransition transition = new AutoTransition();
+        AccelerateDecelerateInterpolator interp = new AccelerateDecelerateInterpolator();
+
+        transition.setInterpolator(interp);
+        transition.setDuration(500);
+        transition.setOrdering(TransitionSet.ORDERING_TOGETHER);
+
+        TransitionManager.go( bottomOpen, transition );
+
+        isBottomOpen = true; //used for triggering close on back button
+
+        //update Metadata and State (because everything resets when changing layouts)
+        MediaControllerCompat controller = MediaControllerCompat.getMediaController(this);
+        controllerCallbacks.onMetadataChanged( controller.getMetadata() );
+        controllerCallbacks.onPlaybackStateChanged( controller.getPlaybackState() );
+
+        TextView songText = findViewById(R.id.bottom_song_title);
+        songText.setSelected(true); // to make marquee scrolling work
+
+        /* UPDATE RECYCLER VIEW FOR PLAY QUEUE */
+        List<MediaSessionCompat.QueueItem> queue = controller.getQueue();
+        if(queue != null)
+        {
+            ArrayList<Integer> songIDs = new ArrayList<>();
+            for(MediaSessionCompat.QueueItem item : queue)
+            {
+                songIDs.add( Integer.valueOf(item.getDescription().getMediaId()) );
+            }
+
+            SongRecycler adapter = new SongRecycler(this, onQueueItemClickedListener, songIDs, false);
+
+            RecyclerView queueView = findViewById(R.id.bottom_queue_recycler);
+            queueView.setAdapter(adapter);
+            queueView.setLayoutManager(new LinearLayoutManager(this));
+        }
     }
 
     public void onBottomSheetHidePressed(View v)
     {
         /* animate bottom sheet down to the closed layout */
+        AutoTransition transition = new AutoTransition();
+        AccelerateDecelerateInterpolator interp = new AccelerateDecelerateInterpolator();
+
+        transition.setInterpolator(interp);
+        transition.setDuration(500);
+        transition.setOrdering(TransitionSet.ORDERING_TOGETHER);
+
+        TransitionManager.go( bottomClosed, transition );
+
+        isBottomOpen = false;
+
+        //update Metadata and State (because everything resets when changing layouts)
+        MediaControllerCompat controller = MediaControllerCompat.getMediaController(this);
+        controllerCallbacks.onMetadataChanged( controller.getMetadata() );
+        controllerCallbacks.onPlaybackStateChanged( controller.getPlaybackState() );
+
+        TextView songText = findViewById(R.id.bottom_song_title);
+        songText.setSelected(true); // to make marquee scrolling work
     }
 
     public void onBtnPlayPressed(View v)
@@ -276,28 +364,6 @@ public class MainActivity extends AppCompatActivity implements NavigationRequest
 
             // Finish building the UI
             //updateState();
-
-            mediaBrowser.subscribe(mediaBrowser.getRoot(), subscriptionCallbacks);
-        }
-    }
-
-    class MediaBrowserSubscriptionCallbacks extends MediaBrowserCompat.SubscriptionCallback
-    {
-        @Override
-        public void onChildrenLoaded(@NonNull String parentId, @NonNull List<MediaBrowserCompat.MediaItem> children)
-        {
-            super.onChildrenLoaded(parentId, children);
-
-            MediaControllerCompat controller = MediaControllerCompat.getMediaController(MainActivity.this);
-
-            //test: add all mediaItems into our playlist
-            for(MediaBrowserCompat.MediaItem item : children)
-            {
-                controller.addQueueItem(item.getDescription());
-            }
-
-            //prepare the player (now pressing play will start it)
-            controller.getTransportControls().prepare();
         }
     }
 
@@ -333,6 +399,8 @@ public class MainActivity extends AppCompatActivity implements NavigationRequest
         public void onMetadataChanged(MediaMetadataCompat metadata)
         {
             super.onMetadataChanged(metadata);
+
+            if(metadata == null) return;
 
             TextView text = findViewById(R.id.bottom_song_title);
 

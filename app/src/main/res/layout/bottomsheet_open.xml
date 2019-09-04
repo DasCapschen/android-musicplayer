@@ -5,57 +5,37 @@
     android:id="@+id/bottom_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/bottomsheet_bg"
+    android:paddingStart="8dp"
+    android:paddingLeft="8dp"
+    android:paddingTop="16dp"
+    android:paddingEnd="8dp"
+    android:paddingRight="8dp"
+    android:paddingBottom="8dp"
+    android:clickable="true"
     tools:context=".MainActivity">
 
-    <ImageView
-        android:id="@+id/bottom_bg_image"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/bottomsheet_bg" />
-
-    <ImageView
-        android:id="@+id/bottom_album_image"
-        android:layout_width="200dp"
-        android:layout_height="200dp"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="32dp"
-        android:layout_marginEnd="32dp"
-        android:layout_marginBottom="32dp"
-        app:layout_constraintBottom_toTopOf="@id/bottom_song_title"
-        app:layout_constraintEnd_toEndOf="@+id/bottom_bg_image"
-        app:layout_constraintStart_toStartOf="@+id/bottom_bg_image"
-        app:layout_constraintTop_toTopOf="@+id/bottom_bg_image"
-        app:srcCompat="@mipmap/ic_launcher_round" />
-
-    <TextView
-        android:id="@+id/bottom_song_title"
-        android:layout_width="0dp"
+    <ImageButton
+        android:id="@+id/btnShuffle"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:text="TextView"
-        android:textAlignment="center"
-        android:textSize="24sp"
-        app:layout_constraintBottom_toBottomOf="@id/bottom_bg_image"
-        app:layout_constraintEnd_toEndOf="@+id/bottom_bg_image"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@+id/bottom_bg_image"
-        app:layout_constraintTop_toTopOf="@id/bottom_bg_image" />
+        android:background="@android:color/transparent"
+        app:layout_constraintBottom_toBottomOf="@id/btnPrev"
+        app:layout_constraintEnd_toStartOf="@+id/btnPrev"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/btnPrev"
+        app:srcCompat="@drawable/ic_shuffle" />
 
     <ImageButton
         android:id="@+id/btnPrev"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
         android:background="@android:color/transparent"
         android:onClick="onBtnPrevPressed"
         app:layout_constraintBottom_toBottomOf="@id/btnPlay"
         app:layout_constraintEnd_toStartOf="@+id/btnPlay"
-        app:layout_constraintStart_toStartOf="@+id/bottom_bg_image"
+        app:layout_constraintStart_toEndOf="@+id/btnShuffle"
         app:layout_constraintTop_toTopOf="@id/btnPlay"
         app:srcCompat="@drawable/ic_prev" />
 
@@ -63,40 +43,107 @@
         android:id="@+id/btnPlay"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="32dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
         android:background="@android:color/transparent"
         android:onClick="onBtnPlayPressed"
-        app:layout_constraintBottom_toBottomOf="@+id/bottom_bg_image"
-        app:layout_constraintEnd_toStartOf="@+id/btnNext"
-        app:layout_constraintStart_toEndOf="@+id/btnPrev"
+        app:layout_constraintBottom_toTopOf="@id/guideline"
+        app:layout_constraintEnd_toStartOf="@id/btnNext"
+        app:layout_constraintStart_toEndOf="@id/btnPrev"
         app:layout_constraintTop_toBottomOf="@id/bottom_song_title"
-        app:layout_constraintVertical_bias="0.2"
         app:srcCompat="@drawable/ic_play" />
 
     <ImageButton
         android:id="@+id/btnNext"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
+        android:layout_height="0dp"
         android:background="@android:color/transparent"
         android:onClick="onBtnNextPressed"
         app:layout_constraintBottom_toBottomOf="@id/btnPlay"
-        app:layout_constraintEnd_toEndOf="@+id/bottom_bg_image"
+        app:layout_constraintEnd_toStartOf="@id/btnRepeat"
         app:layout_constraintStart_toEndOf="@id/btnPlay"
         app:layout_constraintTop_toTopOf="@id/btnPlay"
         app:srcCompat="@drawable/ic_next" />
 
     <ImageButton
+        android:id="@+id/btnRepeat"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:background="@android:color/transparent"
+        app:layout_constraintBottom_toBottomOf="@id/btnNext"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/btnNext"
+        app:layout_constraintTop_toTopOf="@id/btnNext"
+        app:srcCompat="@drawable/ic_repeat" />
+
+    <ImageButton
         android:id="@+id/btnHide"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="32dp"
         android:background="#00FFFFFF"
         android:onClick="onBottomSheetHidePressed"
         android:rotation="-90"
-        app:layout_constraintBottom_toTopOf="@+id/bottom_album_image"
-        app:layout_constraintEnd_toEndOf="@+id/bottom_bg_image"
-        app:layout_constraintHorizontal_bias=".08"
-        app:layout_constraintStart_toStartOf="@+id/bottom_bg_image"
-        app:layout_constraintTop_toTopOf="@+id/bottom_bg_image"
+        app:layout_constraintBottom_toBottomOf="@+id/bottom_album_image"
+        app:layout_constraintEnd_toStartOf="@id/bottom_album_image"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0"
         app:srcCompat="?attr/homeAsUpIndicator" />
+
+    <ImageView
+        android:id="@+id/bottom_album_image"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@id/bottom_song_title"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@mipmap/ic_launcher_round" />
+
+    <TextView
+        android:id="@+id/bottom_song_title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="8dp"
+        android:ellipsize="marquee"
+        android:text="TextView"
+        android:textAlignment="center"
+        android:textSize="24sp"
+        app:layout_constraintBottom_toTopOf="@id/btnPlay"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/bottom_album_image" />
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/bottom_queue_recycler"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/guideline" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.5" />
 </android.support.constraint.ConstraintLayout>

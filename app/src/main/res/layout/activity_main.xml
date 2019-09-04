@@ -32,7 +32,8 @@
     <FrameLayout
         android:id="@+id/main_bottomSheetFrame"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom">
 
         <include
             layout="@layout/bottomsheet_closed"

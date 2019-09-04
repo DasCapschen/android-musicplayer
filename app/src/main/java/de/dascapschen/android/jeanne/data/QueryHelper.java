@@ -23,23 +23,27 @@ public class QueryHelper
 
         String sort = MediaStore.Audio.Media.TITLE + " ASC";
 
-        Cursor cursor = ctx.getContentResolver()
-                .query(mediaUri, projection, null, null, sort);
+        ArrayList<Integer> songIds = null;
 
-        if( cursor != null && cursor.moveToFirst() )
+        try( Cursor cursor = ctx.getContentResolver()
+                .query(mediaUri, projection, null, null, sort)  )
         {
+            cursor.moveToFirst();
+
             int idIndex = cursor.getColumnIndex(MediaStore.Audio.Media._ID);
 
-            ArrayList<Integer> songIds = new ArrayList<>();
+            songIds = new ArrayList<>();
 
             do {
                 songIds.add( cursor.getInt(idIndex) );
             } while(cursor.moveToNext() );
-
-            cursor.close();
-            return songIds;
         }
-        return null;
+        catch(NullPointerException e)
+        {
+            e.printStackTrace();
+        }
+
+        return songIds;
     }
 
     public static ArrayList<Integer> getSongIDsForAlbum(Context ctx, int albumID)
@@ -57,23 +61,27 @@ public class QueryHelper
 
         String sort = MediaStore.Audio.Media.TITLE + " ASC";
 
-        Cursor cursor = ctx.getContentResolver()
-                .query(mediaUri, projection, selection, selectionArgs, sort);
+        ArrayList<Integer> songIds = null;
 
-        if( cursor != null && cursor.moveToFirst() )
+        try ( Cursor cursor = ctx.getContentResolver()
+                .query(mediaUri, projection, selection, selectionArgs, sort) )
         {
+            cursor.moveToFirst();
+
             int idIndex = cursor.getColumnIndex(MediaStore.Audio.Media._ID);
 
-            ArrayList<Integer> songIds = new ArrayList<>();
+            songIds = new ArrayList<>();
 
             do {
                 songIds.add( cursor.getInt(idIndex) );
             } while(cursor.moveToNext() );
-
-            cursor.close();
-            return songIds;
         }
-        return null;
+        catch(NullPointerException e)
+        {
+            e.printStackTrace();
+        }
+
+        return songIds;
     }
 
     public static ArrayList<Integer> getAllArtistIDs(Context ctx)
@@ -87,23 +95,28 @@ public class QueryHelper
 
         String sort = MediaStore.Audio.Artists.ARTIST + " ASC";
 
-        Cursor cursor = ctx.getContentResolver()
-                .query(mediaUri, projection, null, null, sort);
+        ArrayList<Integer> artistIds = null;
 
-        if( cursor != null && cursor.moveToFirst() )
+        try( Cursor cursor = ctx.getContentResolver()
+                .query(mediaUri, projection, null, null, sort) )
         {
+            cursor.moveToFirst();
+
             int idIndex = cursor.getColumnIndex(MediaStore.Audio.Artists._ID);
 
-            ArrayList<Integer> artistIds = new ArrayList<>();
+            artistIds = new ArrayList<>();
 
-            do {
-                artistIds.add( cursor.getInt(idIndex) );
-            } while(cursor.moveToNext() );
-
-            cursor.close();
-            return artistIds;
+            do
+            {
+                artistIds.add(cursor.getInt(idIndex));
+            } while (cursor.moveToNext());
         }
-        return null;
+        catch(NullPointerException e)
+        {
+            e.printStackTrace();
+        }
+
+        return artistIds;
     }
 
     public static ArrayList<Integer> getAllAlbumIDs(Context ctx)
@@ -118,23 +131,27 @@ public class QueryHelper
 
         String sort = MediaStore.Audio.Albums.ALBUM + " ASC";
 
-        Cursor cursor = ctx.getContentResolver()
-                .query(mediaUri, projection, null, null, sort);
+        ArrayList<Integer> albumIds = null;
 
-        if( cursor != null && cursor.moveToFirst() )
+        try( Cursor cursor = ctx.getContentResolver()
+                .query(mediaUri, projection, null, null, sort) )
         {
+            cursor.moveToFirst();
+
             int idIndex = cursor.getColumnIndex(MediaStore.Audio.Albums._ID);
 
-            ArrayList<Integer> albumIds = new ArrayList<>();
+            albumIds = new ArrayList<>();
 
             do {
                 albumIds.add( cursor.getInt(idIndex) );
             } while(cursor.moveToNext() );
-
-            cursor.close();
-            return albumIds;
         }
-        return null;
+        catch(NullPointerException e)
+        {
+            e.printStackTrace();
+        }
+
+        return albumIds;
     }
 
 
@@ -150,23 +167,26 @@ public class QueryHelper
 
         String sort = MediaStore.Audio.Artists.Albums.ALBUM + " ASC";
 
-        Cursor cursor = ctx.getContentResolver()
-                .query(mediaUri, projection, null, null, sort);
+        ArrayList<Integer> albumIds = null;
 
-        if( cursor != null && cursor.moveToFirst() )
+        try( Cursor cursor = ctx.getContentResolver()
+                .query(mediaUri, projection, null, null, sort) )
         {
+            cursor.moveToFirst();
             int idIndex = cursor.getColumnIndex("_id");
 
-            ArrayList<Integer> albumIds = new ArrayList<>();
+            albumIds = new ArrayList<>();
 
             do {
                 albumIds.add( cursor.getInt(idIndex) );
             } while(cursor.moveToNext() );
-
-            cursor.close();
-            return albumIds;
         }
-        return null;
+        catch(NullPointerException e)
+        {
+            e.printStackTrace();
+        }
+
+        return albumIds;
     }
 
     public static MediaMetadataCompat getSongMetadataFromID(Context ctx, int id)
@@ -183,19 +203,20 @@ public class QueryHelper
         String selection = MediaStore.Audio.Media._ID + "=?";
         String[] selectionArgs = { String.valueOf(id) };
 
-        Cursor cursor = ctx.getContentResolver()
-                .query(mediaUri, projection, selection, selectionArgs, null);
-
-        if( cursor!=null && cursor.moveToFirst() )
+        try ( Cursor cursor = ctx.getContentResolver()
+                .query(mediaUri, projection, selection, selectionArgs, null) )
         {
-            int idIndex = cursor.getColumnIndex( MediaStore.Audio.Media._ID );
-            int titleIndex = cursor.getColumnIndex( MediaStore.Audio.Media.TITLE );
-            int artistIndex = cursor.getColumnIndex( MediaStore.Audio.Media.ARTIST );
-            int albumIndex = cursor.getColumnIndex( MediaStore.Audio.Media.ALBUM );
+            cursor.moveToFirst();
+
+            int idIndex = cursor.getColumnIndex(MediaStore.Audio.Media._ID);
+            int titleIndex = cursor.getColumnIndex(MediaStore.Audio.Media.TITLE);
+            int artistIndex = cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST);
+            int albumIndex = cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM);
             int durationIndex = cursor.getColumnIndex(MediaStore.Audio.Media.DURATION);
 
-            String songUri = Uri.withAppendedPath( MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, ""+id ).toString();
+            String songUri = Uri.withAppendedPath(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, "" + id).toString();
 
+            //TODO: ALBUM ART
             return new MediaMetadataCompat.Builder()
                     .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, cursor.getString(idIndex))
                     .putString(MediaMetadataCompat.METADATA_KEY_TITLE, cursor.getString(titleIndex))
@@ -204,6 +225,10 @@ public class QueryHelper
                     .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI, songUri)
                     .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, cursor.getLong(durationIndex))
                     .build();
+        }
+        catch (NullPointerException e)
+        {
+            e.printStackTrace();
         }
 
         return null;
@@ -223,11 +248,12 @@ public class QueryHelper
         String selection = MediaStore.Audio.Albums._ID + "=?";
         String[] selectionArgs = { String.valueOf(id) };
 
-        Cursor cursor = ctx.getContentResolver()
-                .query(mediaUri, projection, selection, selectionArgs, null);
 
-        if( cursor!=null && cursor.moveToFirst() )
+        try( Cursor cursor = ctx.getContentResolver()
+                .query(mediaUri, projection, selection, selectionArgs, null) )
         {
+            cursor.moveToFirst();
+
             int idIndex = cursor.getColumnIndex( MediaStore.Audio.Albums._ID );
             int artistIndex = cursor.getColumnIndex( MediaStore.Audio.Albums.ARTIST );
             int albumIndex = cursor.getColumnIndex( MediaStore.Audio.Albums.ALBUM );
@@ -241,6 +267,11 @@ public class QueryHelper
                     .putLong(MediaMetadataCompat.METADATA_KEY_NUM_TRACKS, cursor.getLong(numSongsIndex))
                     .build();
         }
+        catch(NullPointerException e)
+        {
+            e.printStackTrace();
+        }
+
         return null;
     }
 
@@ -256,11 +287,11 @@ public class QueryHelper
         String selection = MediaStore.Audio.Artists._ID + "=?";
         String[] selectionArgs = { String.valueOf(id) };
 
-        Cursor cursor = ctx.getContentResolver()
-                .query(mediaUri, projection, selection, selectionArgs, null);
-
-        if( cursor!=null && cursor.moveToFirst() )
+        try( Cursor cursor = ctx.getContentResolver()
+                .query(mediaUri, projection, selection, selectionArgs, null)  )
         {
+            cursor.moveToFirst();
+
             int idIndex = cursor.getColumnIndex( MediaStore.Audio.Artists._ID );
             int artistIndex = cursor.getColumnIndex( MediaStore.Audio.Artists.ARTIST );
             int numAlbumsIndex = cursor.getColumnIndex(MediaStore.Audio.Artists.NUMBER_OF_ALBUMS);
@@ -271,6 +302,11 @@ public class QueryHelper
                     .putLong(MediaMetadataCompat.METADATA_KEY_NUM_TRACKS, cursor.getLong(numAlbumsIndex))
                     .build();
         }
+        catch(NullPointerException e)
+        {
+            e.printStackTrace();
+        }
+
         return null;
     }
 

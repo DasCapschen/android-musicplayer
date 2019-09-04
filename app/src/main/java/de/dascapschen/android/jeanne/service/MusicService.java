@@ -5,6 +5,7 @@ import android.content.ContentUris;
 import android.content.Intent;
 import android.media.browse.MediaBrowser;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -158,7 +159,7 @@ public class MusicService extends MediaBrowserServiceCompat
         {
 
         }
-    }
+    } // End Callbacks
 
     class MusicSessionCallbacks extends MediaSessionCompat.Callback
     {
@@ -214,7 +215,7 @@ public class MusicService extends MediaBrowserServiceCompat
             //add new playlist item
             int id = (int)ContentUris.parseId(uri);
             playlist.add(id);
-            //onAddQueueItem(QueryHelper.getSongMetadataFromID(MusicService.this, id).getDescription());
+            updateMediasessionQueue();
 
             onPrepare();
 
@@ -296,7 +297,32 @@ public class MusicService extends MediaBrowserServiceCompat
 
             queueIndex = 0;
             preparedMedia = null;
-            //mediaSession.setQueue(playlist);
+            updateMediasessionQueue();
         }
-    }
-}
+
+        //FIXME: I'M EXTREMELY SLOW
+        void updateMediasessionQueue()
+        {
+            ArrayList<MediaSessionCompat.QueueItem> queue = new ArrayList<>();
+
+            for( int id : playlist )
+            {
+                MediaMetadataCompat metadata = QueryHelper.getSongMetadataFromID(MusicService.this, id);
+
+                if(metadata == null)
+                {
+                    Log.e("QUEUE", String.format("Failed to get Metadata for Song with ID %d", id));
+                    continue;
+                }
+
+                queue.add( new MediaSessionCompat.QueueItem(
+                        metadata.getDescription(),
+                        metadata.getDescription().hashCode()
+                ));
+            }
+
+            mediaSession.setQueue(queue);
+        }
+
+    } // End Callbacks
+} // End MusicService
