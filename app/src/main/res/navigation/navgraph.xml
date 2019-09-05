@@ -34,6 +34,14 @@
             app:popEnterAnim="@anim/nav_default_pop_enter_anim"
             app:popExitAnim="@anim/nav_default_pop_exit_anim"
             app:popUpTo="@+id/destination_main" />
+        <action
+            android:id="@+id/action_to_about"
+            app:destination="@id/aboutActivity"
+            app:popUpTo="@+id/destination_main" />
+        <action
+            android:id="@+id/action_to_settings"
+            app:destination="@id/settingsActivity"
+            app:popUpTo="@+id/destination_main" />
     </fragment>
     <fragment
         android:id="@+id/destination_artist_detail"
@@ -62,4 +70,14 @@
             android:name="playlistID"
             app:argType="integer" />
     </fragment>
+    <activity
+        android:id="@+id/aboutActivity"
+        android:name="de.dascapschen.android.jeanne.AboutActivity"
+        android:label="activity_about"
+        tools:layout="@layout/activity_about" />
+    <activity
+        android:id="@+id/settingsActivity"
+        android:name="de.dascapschen.android.jeanne.SettingsActivity"
+        android:label="activity_settings"
+        tools:layout="@layout/activity_settings" />
 </navigation>

@@ -4,6 +4,7 @@ import android.os.Bundle;
 
 public interface NavigationRequest
 {
+    void navigate(int actionID, Bundle arguments, boolean homeAsUp);
     void navigate(int actionID, Bundle arguments);
     void back();
 }

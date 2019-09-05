@@ -110,11 +110,13 @@ public class MainActivity extends AppCompatActivity implements NavigationRequest
                 back();
                 break;
             case R.id.menu_item_settings:
+                navigate(R.id.action_to_settings, null, false);
                 break;
             case R.id.menu_item_about:
+                navigate(R.id.action_to_about, null, false);
                 break;
             case R.id.app_bar_search:
-                //navigate(R.id.action_to_search);
+                //navigate(R.id.action_to_search, null); //bundle with search query?
                 break;
         }
 
@@ -122,10 +124,16 @@ public class MainActivity extends AppCompatActivity implements NavigationRequest
     }
 
     @Override
-    public void navigate(int actionID, Bundle arguments)
+    public void navigate(int actionID, Bundle arguments, boolean homeAsUp)
     {
         navController.navigate(actionID, arguments);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(homeAsUp);
+    }
+
+    @Override
+    public void navigate(int actionID, Bundle arguments)
+    {
+        navigate(actionID, arguments, true);
     }
 
     @Override
