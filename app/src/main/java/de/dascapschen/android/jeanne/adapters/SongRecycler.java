@@ -20,6 +20,8 @@ public class SongRecycler extends RecyclerAdapter
     {
         int id = mData.get(position);
 
+        //FIXME: takes about 8ms
+        //QUESTION: why is song metadata ~8ms, and artist metadata ~35ms !?
         MediaMetadataCompat metadata = QueryHelper.getSongMetadataFromID(mContext, id);
         if(metadata == null) return;
 

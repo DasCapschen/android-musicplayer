@@ -23,14 +23,19 @@ public class SectionedAdapter extends RecyclerView.Adapter<SectionViewHolder>
 {
     Context context;
     ArrayList<Integer> sections;
+    int artistID;
     OnItemClickListener listener;
     NestedItemClickListener nestedListener;
     boolean endPadding;
 
-    public SectionedAdapter(Context context, OnItemClickListener listener, NestedItemClickListener nestedListener, ArrayList<Integer> sections, boolean useEndPadding)
+    public SectionedAdapter(Context context, OnItemClickListener listener,
+                            NestedItemClickListener nestedListener,
+                            ArrayList<Integer> sections, int artistID,
+                            boolean useEndPadding)
     {
         this.context = context;
         this.sections = sections;
+        this.artistID = artistID;
         this.listener = listener;
         this.nestedListener = nestedListener;
         this.endPadding = useEndPadding;
@@ -76,6 +81,7 @@ public class SectionedAdapter extends RecyclerView.Adapter<SectionViewHolder>
 
         int albumID = sections.get(position);
 
+        //FIXME: wasting 27ms just for album name (and art)
         MediaMetadataCompat metadata = QueryHelper.getAlbumMetadataFromID(context, albumID);
         if(metadata == null) return;
 
@@ -85,7 +91,8 @@ public class SectionedAdapter extends RecyclerView.Adapter<SectionViewHolder>
         sectionViewHolder.nestedRecycler.setHasFixedSize(true);
         sectionViewHolder.nestedRecycler.setNestedScrollingEnabled(false);
 
-        ArrayList<Integer> songIDs = QueryHelper.getSongIDsForAlbum(context, albumID);
+        //FIXME: takes 15ms
+        ArrayList<Integer> songIDs = QueryHelper.getSongIDsForAlbumArtist(context, albumID, artistID);
 
         OnItemClickListener nestedClickListener = new OnItemClickListener() {
             @Override

@@ -1,11 +1,9 @@
 package de.dascapschen.android.jeanne.service;
 
 import android.content.BroadcastReceiver;
-import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.res.AssetFileDescriptor;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -15,7 +13,7 @@ import android.support.v4.media.session.PlaybackStateCompat;
 import android.util.Log;
 import android.widget.Toast;
 
-import de.dascapschen.android.jeanne.data.QueryHelper;
+import org.jetbrains.annotations.NotNull;
 
 public class MusicPlayer implements AudioManager.OnAudioFocusChangeListener
 {
@@ -54,7 +52,7 @@ public class MusicPlayer implements AudioManager.OnAudioFocusChangeListener
         }
     };
 
-    public MusicPlayer(Context context, PlayerListener listener)
+    MusicPlayer(@NotNull Context context, PlayerListener listener)
     {
         appContext = context.getApplicationContext();
         audioManager = (AudioManager)appContext.getSystemService(Context.AUDIO_SERVICE);
@@ -75,12 +73,12 @@ public class MusicPlayer implements AudioManager.OnAudioFocusChangeListener
         }
     }
 
-    public MediaMetadataCompat getCurrentMedia()
+    MediaMetadataCompat getCurrentMedia()
     {
         return currentMedia;
     }
 
-    public void play()
+    private void play()
     {
         if(requestAudioFocus())
         {
@@ -89,7 +87,7 @@ public class MusicPlayer implements AudioManager.OnAudioFocusChangeListener
         }
     }
 
-    public void playFromMedia(MediaMetadataCompat media)
+    void playFromMedia(@NotNull MediaMetadataCompat media)
     {
         currentMedia = media;
         Uri mediaUri = media.getDescription().getMediaUri();
@@ -97,7 +95,7 @@ public class MusicPlayer implements AudioManager.OnAudioFocusChangeListener
         playFromUri( mediaUri );
     }
 
-    public void playFromUri(Uri uri)
+    private void playFromUri(@NotNull Uri uri)
     {
         boolean mediaChanged = !uri.equals(currentURI);
 
@@ -128,31 +126,30 @@ public class MusicPlayer implements AudioManager.OnAudioFocusChangeListener
         }
         catch(Exception e)
         {
-            //FIXME: This always happens,
             Toast.makeText(appContext, "Failed to Play from Uri", Toast.LENGTH_SHORT).show();
             Log.e("PLAY FROM URI", "FAILED");
             e.printStackTrace();
         }
     }
 
-    public void pause()
+    void pause()
     {
         unregisterAudioNoisyReceiver();
         onPause();
     }
-    public void stop()
+    void stop()
     {
         audioManager.abandonAudioFocus(this);
         unregisterAudioNoisyReceiver();
         onStop();
     }
 
-    public boolean isPlaying()
+    private boolean isPlaying()
     {
         return mediaPlayer != null && mediaPlayer.isPlaying();
     }
 
-    public void setVolume(float volume)
+    private void setVolume(float volume)
     {
         if(mediaPlayer != null)
             mediaPlayer.setVolume(volume, volume);

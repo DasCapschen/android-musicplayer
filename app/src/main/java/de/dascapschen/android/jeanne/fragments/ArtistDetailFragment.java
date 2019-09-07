@@ -51,6 +51,7 @@ public class ArtistDetailFragment extends Fragment implements OnItemClickListene
         super.onViewCreated(view, savedInstanceState);
 
         int artistID = getArguments().getInt("artistID");
+        //FIXME: wasting 35ms just for artist name
         MediaMetadataCompat metadata = QueryHelper.getArtistMetadataFromID(getContext(), artistID);
         if(metadata == null) return;
 
@@ -58,6 +59,7 @@ public class ArtistDetailFragment extends Fragment implements OnItemClickListene
 
         getActivity().setTitle( artistName );
 
+        //this just takes 26ms
         ArrayList<Integer> albumIDs = QueryHelper.getAlbumIDsForArtist(getContext(), artistID);
         if(albumIDs == null)
         {
@@ -66,7 +68,7 @@ public class ArtistDetailFragment extends Fragment implements OnItemClickListene
         }
 
         RecyclerView recyclerView = view.findViewById(R.id.detail_recycler);
-        adapter = new SectionedAdapter(getContext(), this, this, albumIDs, true);
+        adapter = new SectionedAdapter(getContext(), this, this, albumIDs, artistID, true);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
     }
