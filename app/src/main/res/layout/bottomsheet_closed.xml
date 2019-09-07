@@ -6,6 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="64dp"
     android:layout_gravity="bottom"
+    android:animateLayoutChanges="true"
     android:background="@drawable/bottomsheet_bg"
     android:clickable="true"
     android:onClick="onBottomSheetPressed"
@@ -21,7 +22,7 @@
         android:onClick="onBtnPrevPressed"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/btnPlay"
-        app:layout_constraintStart_toEndOf="@+id/bottom_song_title"
+        app:layout_constraintStart_toEndOf="@+id/bottom_song_title_compact"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/ic_prev" />
 
@@ -62,14 +63,14 @@
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/bottom_song_title"
+        app:layout_constraintEnd_toStartOf="@+id/bottom_song_title_compact"
         app:layout_constraintStart_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@mipmap/ic_launcher_round" />
 
     <TextView
-        android:id="@+id/bottom_song_title"
+        android:id="@+id/bottom_song_title_compact"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
@@ -80,7 +81,7 @@
         android:marqueeRepeatLimit="marquee_forever"
         android:scrollHorizontally="true"
         android:singleLine="true"
-        android:text="TextView"
+        android:text="Song Name - Artist Name"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/btnPrev"
         app:layout_constraintStart_toEndOf="@+id/bottom_album_image"

@@ -1,10 +1,17 @@
 package de.dascapschen.android.jeanne;
 
 import android.Manifest;
+import android.animation.ValueAnimator;
 import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.GradientDrawable;
+import android.media.AudioManager;
+import android.media.Image;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.transition.AutoTransition;
 import android.support.transition.Scene;
@@ -189,15 +196,16 @@ public class MainActivity extends AppCompatActivity implements NavigationRequest
                 connectionCallbacks,
                 null);
         mediaBrowser.connect();
+
+        setVolumeControlStream(AudioManager.STREAM_MUSIC);
     }
-/*
+
     @Override
     protected void onResume()
     {
         super.onResume();
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
     }
- */
 
     @Override
     protected void onStop()
@@ -216,6 +224,8 @@ public class MainActivity extends AppCompatActivity implements NavigationRequest
             mediaBrowser.disconnect();
             mediaBrowser = null;
         }
+
+        setVolumeControlStream(AudioManager.USE_DEFAULT_STREAM_TYPE);
     }
 
     private void setupView()
@@ -232,7 +242,7 @@ public class MainActivity extends AppCompatActivity implements NavigationRequest
 
     private void setupBottomSheet()
     {
-        TextView songText = findViewById(R.id.bottom_song_title);
+        TextView songText = findViewById(R.id.bottom_song_title_compact);
         songText.setSelected(true); // to make marquee scrolling work
 
         bottomRoot = findViewById(R.id.main_bottomSheetFrame);
@@ -242,45 +252,33 @@ public class MainActivity extends AppCompatActivity implements NavigationRequest
 
     public void onBottomSheetPressed(View v)
     {
-        /* animate bottom sheet up to the full layout */
-        AutoTransition transition = new AutoTransition();
-        AccelerateDecelerateInterpolator interp = new AccelerateDecelerateInterpolator();
+        bottomSheetAnimation(false);
 
-        transition.setInterpolator(interp);
-        transition.setDuration(500);
-        transition.setOrdering(TransitionSet.ORDERING_TOGETHER);
-
-        TransitionManager.go( bottomOpen, transition );
-
-        isBottomOpen = true; //used for triggering close on back button
-
-        //update Metadata and State (because everything resets when changing layouts)
-        MediaControllerCompat controller = MediaControllerCompat.getMediaController(this);
-        controllerCallbacks.onMetadataChanged( controller.getMetadata() );
-        controllerCallbacks.onPlaybackStateChanged( controller.getPlaybackState() );
-
+        //update artist and song text
         TextView songText = findViewById(R.id.bottom_song_title);
         songText.setSelected(true); // to make marquee scrolling work
 
-        /* UPDATE RECYCLER VIEW FOR PLAY QUEUE */
-        List<MediaSessionCompat.QueueItem> queue = controller.getQueue();
-        if(queue != null)
-        {
-            ArrayList<Integer> songIDs = new ArrayList<>();
-            for(MediaSessionCompat.QueueItem item : queue)
-            {
-                songIDs.add( Integer.valueOf(item.getDescription().getMediaId()) );
-            }
+        //possible to select multiple??
+        TextView artistText = findViewById(R.id.bottom_artist_name);
+        artistText.setSelected(true);
 
-            SongRecycler adapter = new SongRecycler(this, onQueueItemClickedListener, songIDs, false);
+        MediaControllerCompat controller = MediaControllerCompat.getMediaController(this);
 
-            RecyclerView queueView = findViewById(R.id.bottom_queue_recycler);
-            queueView.setAdapter(adapter);
-            queueView.setLayoutManager(new LinearLayoutManager(this));
-        }
+        controllerCallbacks.onRepeatModeChanged( controller.getRepeatMode() );
+        controllerCallbacks.onShuffleModeChanged( controller.getShuffleMode() );
+
+        updateQueueRecycler();
     }
 
     public void onBottomSheetHidePressed(View v)
+    {
+        bottomSheetAnimation(true);
+
+        TextView songText = findViewById(R.id.bottom_song_title_compact);
+        songText.setSelected(true); // to make marquee scrolling work
+    }
+
+    void bottomSheetAnimation( boolean close )
     {
         /* animate bottom sheet down to the closed layout */
         AutoTransition transition = new AutoTransition();
@@ -290,17 +288,63 @@ public class MainActivity extends AppCompatActivity implements NavigationRequest
         transition.setDuration(500);
         transition.setOrdering(TransitionSet.ORDERING_TOGETHER);
 
-        TransitionManager.go( bottomClosed, transition );
+        TransitionManager.go( close ? bottomClosed : bottomOpen, transition );
 
-        isBottomOpen = false;
+        /* add rounded corners of background image */
+        final GradientDrawable bottomBG = (GradientDrawable) getResources().getDrawable(R.drawable.bottomsheet_bg, getTheme());
+
+        float dp = 50;
+        float px = dp * Resources.getSystem().getDisplayMetrics().density;
+
+        ValueAnimator bgAnim;
+        if(close)
+        {
+            bgAnim = ValueAnimator.ofFloat(0, px);
+        }
+        else
+        {
+            bgAnim = ValueAnimator.ofFloat(px, 0);
+        }
+
+        bgAnim.setDuration(500);
+        bgAnim.setInterpolator(interp);
+        bgAnim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener()
+        {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation)
+            {
+                bottomBG.setCornerRadius( (float)animation.getAnimatedValue() );
+            }
+        });
+
+        bgAnim.start();
+
+        isBottomOpen = !close;
 
         //update Metadata and State (because everything resets when changing layouts)
         MediaControllerCompat controller = MediaControllerCompat.getMediaController(this);
         controllerCallbacks.onMetadataChanged( controller.getMetadata() );
         controllerCallbacks.onPlaybackStateChanged( controller.getPlaybackState() );
+    }
 
-        TextView songText = findViewById(R.id.bottom_song_title);
-        songText.setSelected(true); // to make marquee scrolling work
+    void updateQueueRecycler()
+    {
+        /* UPDATE RECYCLER VIEW FOR PLAY QUEUE */
+        List<MediaSessionCompat.QueueItem> queue = MediaControllerCompat.getMediaController(this).getQueue();
+        if(queue != null)
+        {
+            ArrayList<Integer> songIDs = new ArrayList<>();
+            for(MediaSessionCompat.QueueItem item : queue)
+            {
+                songIDs.add( (int)item.getQueueId() );
+            }
+
+            SongRecycler adapter = new SongRecycler(this, onQueueItemClickedListener, songIDs, false);
+
+            RecyclerView queueView = findViewById(R.id.bottom_queue_recycler);
+            queueView.setAdapter(adapter);
+            queueView.setLayoutManager(new LinearLayoutManager(this));
+        }
     }
 
     public void onBtnPlayPressed(View v)
@@ -332,6 +376,47 @@ public class MainActivity extends AppCompatActivity implements NavigationRequest
         MediaControllerCompat.getMediaController(this).getTransportControls().skipToPrevious();
     }
 
+    public void onBtnShufflePressed(View v)
+    {
+        MediaControllerCompat controller = MediaControllerCompat.getMediaController(this);
+
+        int shuffleMode = controller.getShuffleMode();
+
+        //either shuffle or don't ; dunno what "shuffle group" would be...
+        if( shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_NONE )
+        {
+            shuffleMode = PlaybackStateCompat.SHUFFLE_MODE_ALL;
+        }
+        else
+        {
+            shuffleMode = PlaybackStateCompat.SHUFFLE_MODE_NONE;
+        }
+
+        controller.getTransportControls().setShuffleMode(shuffleMode);
+    }
+
+    public void onBtnRepeatPressed(View v)
+    {
+        MediaControllerCompat controller = MediaControllerCompat.getMediaController(this);
+        int repeatMode = controller.getRepeatMode();
+
+        //cycle between repeat all, one, none
+        switch (repeatMode)
+        {
+            //setPressed() changes colors!
+            case PlaybackStateCompat.REPEAT_MODE_NONE:
+                repeatMode = PlaybackStateCompat.REPEAT_MODE_ALL;
+                break;
+            case PlaybackStateCompat.REPEAT_MODE_ALL:
+                repeatMode = PlaybackStateCompat.REPEAT_MODE_ONE;
+                break;
+            case PlaybackStateCompat.REPEAT_MODE_ONE:
+                repeatMode = PlaybackStateCompat.REPEAT_MODE_NONE;
+                break;
+        }
+
+        controller.getTransportControls().setRepeatMode(repeatMode);
+    }
 
     class MediaBrowserConnectionCallbacks extends MediaBrowserCompat.ConnectionCallback
     {
@@ -371,13 +456,62 @@ public class MainActivity extends AppCompatActivity implements NavigationRequest
             }
 
             // Finish building the UI
-            //updateState();
+            MediaMetadataCompat metadata = MediaControllerCompat.getMediaController(MainActivity.this).getMetadata();
+            controllerCallbacks.onMetadataChanged(metadata);
         }
     }
 
     //callbacks for when we play a new song, or press pause etc
     class MediaControllerCallbacks extends MediaControllerCompat.Callback
     {
+        @Override
+        public void onRepeatModeChanged(int repeatMode)
+        {
+            super.onRepeatModeChanged(repeatMode);
+
+            ImageButton btn = findViewById(R.id.btnRepeat);
+            if(btn == null) return;
+
+            switch (repeatMode)
+            {
+                //setPressed() changes colors!
+                case PlaybackStateCompat.REPEAT_MODE_ALL:
+                    btn.setImageResource(R.drawable.ic_repeat);
+                    btn.setColorFilter( getColor(R.color.white), PorterDuff.Mode.SRC_IN );
+                    break;
+                case PlaybackStateCompat.REPEAT_MODE_ONE:
+                    btn.setImageResource(R.drawable.ic_repeat_one);
+                    btn.setColorFilter( getColor(R.color.white), PorterDuff.Mode.SRC_IN );
+                    break;
+                case PlaybackStateCompat.REPEAT_MODE_NONE:
+                    btn.setImageResource(R.drawable.ic_repeat);
+                    btn.setColorFilter(getColor(R.color.black), PorterDuff.Mode.SRC_IN);
+                    break;
+                default:
+                    Log.e("REPEAT MODE", "Unexpected Mode");
+                    break;
+            }
+        }
+
+        @Override
+        public void onShuffleModeChanged(int shuffleMode)
+        {
+            super.onShuffleModeChanged(shuffleMode);
+
+            ImageButton btn = findViewById(R.id.btnShuffle);
+            if(btn == null) return;
+
+            //either shuffle or don't ; dunno what "shuffle group" would be...
+            if( shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_NONE )
+            {
+                btn.setColorFilter(getColor(R.color.black), PorterDuff.Mode.SRC_IN);
+            }
+            else
+            {
+                btn.setColorFilter(getColor(R.color.white), PorterDuff.Mode.SRC_IN);
+            }
+        }
+
         @Override
         public void onPlaybackStateChanged(PlaybackStateCompat state)
         {
@@ -410,16 +544,31 @@ public class MainActivity extends AppCompatActivity implements NavigationRequest
 
             if(metadata == null) return;
 
-            TextView text = findViewById(R.id.bottom_song_title);
+            String title = metadata.getString(MediaMetadataCompat.METADATA_KEY_TITLE);
+            String artist = metadata.getString(MediaMetadataCompat.METADATA_KEY_ARTIST);
 
-            String s = metadata.getString(MediaMetadataCompat.METADATA_KEY_TITLE);
-            s = s.concat(" - ");
-            s = s.concat(metadata.getString(MediaMetadataCompat.METADATA_KEY_ARTIST));
+            TextView text = findViewById(R.id.bottom_song_title_compact);
+            if(text!=null) text.setText( title.concat(" - ").concat(artist) );
 
-            text.setText(s);
+            TextView songTitle = findViewById(R.id.bottom_song_title);
+            if(songTitle != null) songTitle.setText( title );
+            TextView songArtist = findViewById(R.id.bottom_artist_name);
+            if(songArtist != null) songArtist.setText( artist );
 
             ImageView art = findViewById(R.id.bottom_album_image);
             art.setImageBitmap(metadata.getBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART));
+        }
+
+        @Override
+        public void onQueueChanged(List<MediaSessionCompat.QueueItem> queue)
+        {
+            super.onQueueChanged(queue);
+
+            //if not open, no need to update, we update on open anyways
+            if(isBottomOpen)
+            {
+                updateQueueRecycler();
+            }
         }
     }
 

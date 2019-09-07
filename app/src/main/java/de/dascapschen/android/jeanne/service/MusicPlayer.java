@@ -70,13 +70,6 @@ public class MusicPlayer implements AudioManager.OnAudioFocusChangeListener
                 @Override
                 public void onCompletion(MediaPlayer mediaPlayer) {
                     listener.onPlaybackCompleted();
-
-                    // Set the state to "paused" because it most closely matches the state
-                    // in MediaPlayer with regards to available state transitions compared
-                    // to "stop".
-                    // Paused allows: seekTo(), start(), pause(), stop()
-                    // Stop allows: stop()
-                    setNewState(PlaybackStateCompat.STATE_PAUSED);
                 }
             });
         }
@@ -193,6 +186,25 @@ public class MusicPlayer implements AudioManager.OnAudioFocusChangeListener
 
     private void setNewState(int newState)
     {
+        String stateString;
+        switch (newState)
+        {
+            case PlaybackStateCompat.STATE_PLAYING:
+                stateString = "playing";
+                break;
+            case PlaybackStateCompat.STATE_PAUSED:
+                stateString="pause";
+                break;
+            case PlaybackStateCompat.STATE_STOPPED:
+                stateString="stop";
+                break;
+            default:
+                stateString="unknown";
+                break;
+        }
+
+        Log.e("STATE", String.format("setting to %s", stateString));
+
         state = newState;
 
         long position = mediaPlayer == null ? 0 : mediaPlayer.getCurrentPosition();

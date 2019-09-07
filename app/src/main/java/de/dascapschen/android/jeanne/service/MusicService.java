@@ -20,6 +20,7 @@ import android.util.Log;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import de.dascapschen.android.jeanne.data.QueryHelper;
@@ -35,6 +36,7 @@ public class MusicService extends MediaBrowserServiceCompat
     public static final String CUSTOM_ACTION_DATA_KEY = "play_queue_data";
 
     private MediaSessionCompat mediaSession;
+    private MusicSessionCallbacks callbacks;
     private PlaybackStateCompat.Builder stateBuilder;
 
     private MusicNotification notification;
@@ -49,7 +51,8 @@ public class MusicService extends MediaBrowserServiceCompat
 
         mediaSession = new MediaSessionCompat(this, "MUSIC_SERVICE");
 
-        mediaSession.setCallback( new MusicSessionCallbacks() );
+        callbacks = new MusicSessionCallbacks();
+        mediaSession.setCallback( callbacks );
 
         mediaSession.setFlags(
                 MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS |
@@ -87,7 +90,7 @@ public class MusicService extends MediaBrowserServiceCompat
     @Override
     public BrowserRoot onGetRoot(@NonNull String clientPkgName, int clientUid, @Nullable Bundle rootHints)
     {
-        return new BrowserRoot(ROOT_ID, null);
+        return new BrowserRoot(EMPTY_ROOT_ID, null);
     }
 
     @Override
@@ -97,25 +100,11 @@ public class MusicService extends MediaBrowserServiceCompat
         {
             result.sendResult(null);
         }
-
-
-        List<MediaBrowserCompat.MediaItem> items = new ArrayList<>(); //TODO
-
-        /*
-        AllSongs songs = AllSongs.instance();
-        for(Song s : songs.data())
+        else
         {
-            MediaDescriptionCompat desc = new MediaDescriptionCompat.Builder()
-                    .setTitle(s.getDescriptionTitle())
-                    .setSubtitle(s.getDescriptionSubtitle())
-                    .setMediaUri(s.getUri())
-                    .setMediaId(String.format("%d", s.getId()))
-                    .build();
-            MediaBrowserCompat.MediaItem item = new MediaBrowserCompat.MediaItem(desc, MediaBrowserCompat.MediaItem.FLAG_PLAYABLE);
+            List<MediaBrowserCompat.MediaItem> items = new ArrayList<>(); //TODO
+            result.sendResult(items);
         }
-         */
-
-        result.sendResult(items);
     }
 
 
@@ -157,15 +146,20 @@ public class MusicService extends MediaBrowserServiceCompat
         @Override
         public void onPlaybackCompleted()
         {
-
+            Log.e("CALLBACK", "Playback complete!");
+            callbacks.playbackCompleted();
         }
     } // End Callbacks
 
     class MusicSessionCallbacks extends MediaSessionCompat.Callback
     {
         private List<Integer> playlist = new ArrayList<>();
+        private List<Integer> unshuffled = new ArrayList<>();
         private int queueIndex = -1;
         private MediaMetadataCompat preparedMedia;
+
+        private int repeatMode = PlaybackStateCompat.REPEAT_MODE_NONE;
+        private int shuffleMode = PlaybackStateCompat.SHUFFLE_MODE_NONE;
 
         @Override
         public void onAddQueueItem(MediaDescriptionCompat description)
@@ -182,6 +176,28 @@ public class MusicService extends MediaBrowserServiceCompat
             //if(playlist.isEmpty()) queueIndex = -1;
             //mediaSession.setQueue(playlist);
         }
+
+        void playbackCompleted()
+        {
+            preparedMedia = null;
+            if(repeatMode == PlaybackStateCompat.REPEAT_MODE_ONE)
+            {
+                //if repeat one, play current media again
+                onPlay();
+            }
+            else if( repeatMode == PlaybackStateCompat.REPEAT_MODE_NONE && queueIndex == playlist.size()-1 )
+            {
+                //if end of queue and no repeat, stop
+                onStop();
+            }
+            else
+            {
+                //play next song
+                onSkipToNext();
+            }
+        }
+
+
 
         @Override
         public void onPrepare()
@@ -238,9 +254,12 @@ public class MusicService extends MediaBrowserServiceCompat
         }
 
         @Override
-        public void onSkipToNext()
+        public void onSkipToNext()//plays current media again
         {
             Log.i("CALLBACK", "NEXT");
+
+            if(playlist.isEmpty()) return;
+
             queueIndex = ++queueIndex % playlist.size();
             preparedMedia = null;
             onPlay();
@@ -250,6 +269,9 @@ public class MusicService extends MediaBrowserServiceCompat
         public void onSkipToPrevious()
         {
             Log.i("CALLBACK", "PREV");
+
+            if(playlist.isEmpty()) return;
+
             if(queueIndex > 0) queueIndex--;
             else queueIndex = playlist.size() - 1;
             preparedMedia = null;
@@ -270,6 +292,45 @@ public class MusicService extends MediaBrowserServiceCompat
         }
 
         @Override
+        public void onSetRepeatMode(int repeatMode)
+        {
+            Log.i("REPEAT", "Setting Mode");
+
+            mediaSession.setRepeatMode(repeatMode);
+            this.repeatMode = repeatMode;
+        }
+
+        @Override
+        public void onSetShuffleMode(int shuffleMode)
+        {
+            Log.i("SHUFFLE", "Setting Mode");
+
+            mediaSession.setShuffleMode(shuffleMode);
+            this.shuffleMode = shuffleMode;
+
+            if(playlist.isEmpty()) return;
+
+            if(shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_ALL)
+            {
+                unshuffled = new ArrayList<>(playlist); //remember original order
+                int songID = playlist.get(queueIndex);
+
+                Collections.shuffle(playlist);
+                queueIndex = playlist.indexOf(songID);
+
+                updateMediasessionQueue();
+            }
+            else //shuffleMode == SHUFFLE_MODE_NONE
+            {
+                int songID = playlist.get(queueIndex);
+                playlist = unshuffled;
+                queueIndex = playlist.indexOf(songID);
+
+                updateMediasessionQueue();
+            }
+        }
+
+        @Override
         public void onCustomAction(String action, Bundle extras)
         {
             ArrayList<Integer> songIDs = extras.getIntegerArrayList(CUSTOM_ACTION_DATA_KEY);
@@ -281,6 +342,12 @@ public class MusicService extends MediaBrowserServiceCompat
                     break;
                 case CUSTOM_ACTION_APPEND_QUEUE:
                     if(songIDs == null || songIDs.isEmpty()) return;
+
+                    if(shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_ALL)
+                    {
+                        Collections.shuffle(songIDs);
+                    }
+
                     playlist.addAll(songIDs);
                     break;
                 case CUSTOM_ACTION_SET_QUEUE:
@@ -290,6 +357,10 @@ public class MusicService extends MediaBrowserServiceCompat
                         return;
                     }
                     playlist = songIDs;
+                    if(shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_ALL)
+                    {
+                        Collections.shuffle(playlist);
+                    }
                     break;
                 default:
                     break;
@@ -307,6 +378,7 @@ public class MusicService extends MediaBrowserServiceCompat
 
             for( int id : playlist )
             {
+                /*
                 MediaMetadataCompat metadata = QueryHelper.getSongMetadataFromID(MusicService.this, id);
 
                 if(metadata == null)
@@ -314,10 +386,17 @@ public class MusicService extends MediaBrowserServiceCompat
                     Log.e("QUEUE", String.format("Failed to get Metadata for Song with ID %d", id));
                     continue;
                 }
+                */
+
+                /*FIXME: getting content description is slow, lets just pass our ID
+                         and the reclycler view showing this will get the content as needed
+                         (this is faster since we only query a few items at a time)
+                 */
+                MediaDescriptionCompat desc = new MediaDescriptionCompat.Builder().setMediaId(String.valueOf(id)).build();
 
                 queue.add( new MediaSessionCompat.QueueItem(
-                        metadata.getDescription(),
-                        metadata.getDescription().hashCode()
+                        desc,
+                        id
                 ));
             }
 
