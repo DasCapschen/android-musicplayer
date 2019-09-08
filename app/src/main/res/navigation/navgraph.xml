@@ -35,10 +35,6 @@
             app:popExitAnim="@anim/nav_default_pop_exit_anim"
             app:popUpTo="@+id/destination_main" />
         <action
-            android:id="@+id/action_to_about"
-            app:destination="@id/aboutActivity"
-            app:popUpTo="@+id/destination_main" />
-        <action
             android:id="@+id/action_to_settings"
             app:destination="@id/settingsActivity"
             app:popUpTo="@+id/destination_main" />
@@ -70,11 +66,6 @@
             android:name="playlistID"
             app:argType="integer" />
     </fragment>
-    <activity
-        android:id="@+id/aboutActivity"
-        android:name="de.dascapschen.android.jeanne.AboutActivity"
-        android:label="activity_about"
-        tools:layout="@layout/activity_about" />
     <activity
         android:id="@+id/settingsActivity"
         android:name="de.dascapschen.android.jeanne.SettingsActivity"
