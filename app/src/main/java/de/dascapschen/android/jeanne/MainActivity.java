@@ -289,7 +289,6 @@ public class MainActivity extends AppCompatActivity implements NavigationRequest
                 .show();
     }
 
-
     private void setupBottomSheet()
     {
         TextView songText = findViewById(R.id.bottom_song_title_compact);
