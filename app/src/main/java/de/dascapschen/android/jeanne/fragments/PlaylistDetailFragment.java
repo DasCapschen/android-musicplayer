@@ -1,7 +1,6 @@
 package de.dascapschen.android.jeanne.fragments;
 
 
-import android.app.DownloadManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;

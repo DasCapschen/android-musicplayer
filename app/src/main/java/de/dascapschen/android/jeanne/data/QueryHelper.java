@@ -2,18 +2,24 @@ package de.dascapschen.android.jeanne.data;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.database.DatabaseUtils;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.v4.media.MediaMetadataCompat;
+import android.util.Log;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class QueryHelper
 {
     public static ArrayList<Integer> getAllSongIDs(Context ctx)
     {
+        MetaDatabase metaDB = MetaDatabase.getInstance();
+
+        if(metaDB.ready)
+        {
+            return metaDB.getAllSongIDs();
+        }
+
         Uri mediaUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
 
         String[] projection = {
@@ -48,6 +54,13 @@ public class QueryHelper
 
     public static ArrayList<Integer> getSongIDsForAlbum(Context ctx, int albumID)
     {
+        MetaDatabase metaDB = MetaDatabase.getInstance();
+        if(metaDB.ready)
+        {
+            return metaDB.getSongIDsForAlbum(albumID);
+        }
+
+
         Uri mediaUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
 
         String[] projection = {
@@ -86,6 +99,12 @@ public class QueryHelper
 
     public static ArrayList<Integer> getSongIDsForAlbumArtist(Context ctx, int albumID, int artistID)
     {
+        MetaDatabase metaDB = MetaDatabase.getInstance();
+        if(metaDB.ready)
+        {
+            return metaDB.getSongIDsForAlbumArtist(albumID, artistID);
+        }
+
         Uri mediaUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
 
         String[] projection = {
@@ -122,10 +141,17 @@ public class QueryHelper
         }
 
         return songIds;
+
     }
 
     public static ArrayList<Integer> getAllArtistIDs(Context ctx)
     {
+        MetaDatabase metaDB = MetaDatabase.getInstance();
+        if(metaDB.ready)
+        {
+            return metaDB.getAllArtistIDs();
+        }
+
         Uri mediaUri = MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI;
 
         String[] projection = {
@@ -161,9 +187,14 @@ public class QueryHelper
 
     public static ArrayList<Integer> getAllAlbumIDs(Context ctx)
     {
+        MetaDatabase metaDB = MetaDatabase.getInstance();
+        if(metaDB.ready)
+        {
+            return metaDB.getAllAlbumIDs();
+        }
+
         Uri mediaUri = MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI;
 
-        //TODO: there's _ID and ALBUM_ID, which to use!?
         String[] projection = {
                 "DISTINCT " + MediaStore.Audio.Albums._ID,
                 MediaStore.Audio.Albums.ALBUM //needed for sort
@@ -194,9 +225,14 @@ public class QueryHelper
         return albumIds;
     }
 
-
     public static ArrayList<Integer> getAlbumIDsForArtist(Context ctx, int artistID)
     {
+        MetaDatabase metaDB = MetaDatabase.getInstance();
+        if(metaDB.ready)
+        {
+            return metaDB.getAlbumIDsForArtist(artistID);
+        }
+
         Uri mediaUri = MediaStore.Audio.Artists.Albums.getContentUri("external", artistID);
 
         //FIXME: "Invalid Column DISTINCT _id"
@@ -229,8 +265,14 @@ public class QueryHelper
         return albumIds;
     }
 
-    public static MediaMetadataCompat getSongMetadataFromID(Context ctx, int id)
+    public static MediaMetadataCompat getSongMetadataFromID(Context ctx, int songID)
     {
+        MetaDatabase metaDB = MetaDatabase.getInstance();
+        if(metaDB.ready)
+        {
+            return metaDB.getSongMetadataFromID(songID);
+        }
+
         Uri mediaUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
 
         String[] projection = {
@@ -241,24 +283,23 @@ public class QueryHelper
                 MediaStore.Audio.Media.DURATION
         };
         String selection = MediaStore.Audio.Media._ID + "=?";
-        String[] selectionArgs = { String.valueOf(id) };
+        String[] selectionArgs = { String.valueOf(songID) };
 
         try ( Cursor cursor = ctx.getContentResolver()
                 .query(mediaUri, projection, selection, selectionArgs, null) )
         {
             cursor.moveToFirst();
 
-            int idIndex = cursor.getColumnIndex(MediaStore.Audio.Media._ID);
             int titleIndex = cursor.getColumnIndex(MediaStore.Audio.Media.TITLE);
             int artistIndex = cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST);
             int albumIndex = cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM);
             int durationIndex = cursor.getColumnIndex(MediaStore.Audio.Media.DURATION);
 
-            String songUri = Uri.withAppendedPath(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, "" + id).toString();
+            String songUri = Uri.withAppendedPath(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, "" + songID).toString();
 
             //TODO: ALBUM ART
             return new MediaMetadataCompat.Builder()
-                    .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, cursor.getString(idIndex))
+                    .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, String.valueOf(songID))
                     .putString(MediaMetadataCompat.METADATA_KEY_TITLE, cursor.getString(titleIndex))
                     .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, cursor.getString(artistIndex))
                     .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, cursor.getString(albumIndex))
@@ -274,8 +315,14 @@ public class QueryHelper
         return null;
     }
 
-    public static MediaMetadataCompat getAlbumMetadataFromID(Context ctx, int id)
+    public static MediaMetadataCompat getAlbumMetadataFromID(Context ctx, int albumID)
     {
+        MetaDatabase metaDB = MetaDatabase.getInstance();
+        if(metaDB.ready)
+        {
+            return metaDB.getAlbumMetadataFromID(albumID);
+        }
+
         Uri mediaUri = MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI;
 
         String[] projection = {
@@ -286,7 +333,7 @@ public class QueryHelper
                 MediaStore.Audio.Albums.ALBUM_ART
         };
         String selection = MediaStore.Audio.Albums._ID + "=?";
-        String[] selectionArgs = { String.valueOf(id) };
+        String[] selectionArgs = { String.valueOf(albumID) };
 
 
         try( Cursor cursor = ctx.getContentResolver()
@@ -294,16 +341,16 @@ public class QueryHelper
         {
             cursor.moveToFirst();
 
-            int idIndex = cursor.getColumnIndex( MediaStore.Audio.Albums._ID );
             int artistIndex = cursor.getColumnIndex( MediaStore.Audio.Albums.ARTIST );
             int albumIndex = cursor.getColumnIndex( MediaStore.Audio.Albums.ALBUM );
             int numSongsIndex = cursor.getColumnIndex(MediaStore.Audio.Albums.NUMBER_OF_SONGS);
+            int albumArtIndex = cursor.getColumnIndex(MediaStore.Audio.Albums.ALBUM_ART);
 
-            //TODO: ALBUM ART
             return new MediaMetadataCompat.Builder()
-                    .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, cursor.getString(idIndex))
+                    .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, String.valueOf(albumID))
                     .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, cursor.getString(artistIndex))
                     .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, cursor.getString(albumIndex))
+                    .putString(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI, cursor.getString(albumArtIndex))
                     .putLong(MediaMetadataCompat.METADATA_KEY_NUM_TRACKS, cursor.getLong(numSongsIndex))
                     .build();
         }
@@ -315,8 +362,14 @@ public class QueryHelper
         return null;
     }
 
-    public static MediaMetadataCompat getArtistMetadataFromID(Context ctx, int id)
+    public static MediaMetadataCompat getArtistMetadataFromID(Context ctx, int artistID)
     {
+        MetaDatabase metaDB = MetaDatabase.getInstance();
+        if(metaDB.ready)
+        {
+            return metaDB.getArtistMetadataFromID(artistID);
+        }
+
         Uri mediaUri = MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI;
 
         String[] projection = {
@@ -325,19 +378,18 @@ public class QueryHelper
                 MediaStore.Audio.Artists.NUMBER_OF_ALBUMS,
         };
         String selection = MediaStore.Audio.Artists._ID + "=?";
-        String[] selectionArgs = { String.valueOf(id) };
+        String[] selectionArgs = { String.valueOf(artistID) };
 
         try( Cursor cursor = ctx.getContentResolver()
                 .query(mediaUri, projection, selection, selectionArgs, null)  )
         {
             cursor.moveToFirst();
 
-            int idIndex = cursor.getColumnIndex( MediaStore.Audio.Artists._ID );
             int artistIndex = cursor.getColumnIndex( MediaStore.Audio.Artists.ARTIST );
             int numAlbumsIndex = cursor.getColumnIndex(MediaStore.Audio.Artists.NUMBER_OF_ALBUMS);
 
             return new MediaMetadataCompat.Builder()
-                    .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, cursor.getString(idIndex))
+                    .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, String.valueOf(artistID))
                     .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, cursor.getString(artistIndex))
                     .putLong(MediaMetadataCompat.METADATA_KEY_NUM_TRACKS, cursor.getLong(numAlbumsIndex))
                     .build();
@@ -348,6 +400,122 @@ public class QueryHelper
         }
 
         return null;
+    }
+
+    /* ONLY FOR MetaDatabase!! */
+    static ArrayList<MetaDatabase.AlbumData> getAllAlbumMetadata(Context ctx)
+    {
+        Uri mediaUri = MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI;
+
+        String[] projection = {
+                MediaStore.Audio.Albums._ID,
+                MediaStore.Audio.Albums.ALBUM,
+                MediaStore.Audio.Albums.ALBUM_ART
+        };
+
+        ArrayList<MetaDatabase.AlbumData> albumData = new ArrayList<>();
+
+        try( Cursor cursor = ctx.getContentResolver()
+                .query(mediaUri, projection, null, null, null) )
+        {
+            int idIndex = cursor.getColumnIndex( MediaStore.Audio.Albums._ID );
+            int albumIndex = cursor.getColumnIndex( MediaStore.Audio.Albums.ALBUM );
+            int artIndex = cursor.getColumnIndex( MediaStore.Audio.Albums.ALBUM_ART );
+
+            while( cursor.moveToNext() )
+            {
+                int id = cursor.getInt(idIndex);
+                String title = cursor.getString(albumIndex);
+                String art = cursor.getString(artIndex);
+
+                albumData.add( new MetaDatabase.AlbumData(id, title, art));
+            }
+        }
+        catch(NullPointerException e)
+        {
+            e.printStackTrace();
+        }
+
+        return albumData;
+    }
+
+    /* ONLY FOR MetaDatabase!! */
+    static ArrayList<MetaDatabase.ArtistData> getAllArtistMetadata(Context ctx)
+    {
+        Uri mediaUri = MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI;
+
+        String[] projection = {
+                MediaStore.Audio.Artists._ID,
+                MediaStore.Audio.Artists.ARTIST,
+        };
+
+        ArrayList<MetaDatabase.ArtistData> artistData = new ArrayList<>();
+
+        try( Cursor cursor = ctx.getContentResolver()
+                .query(mediaUri, projection, null, null, null)  )
+        {
+            int idIndex = cursor.getColumnIndex( MediaStore.Audio.Artists._ID );
+            int artistIndex = cursor.getColumnIndex( MediaStore.Audio.Artists.ARTIST );
+
+            while( cursor.moveToNext() )
+            {
+                int id = cursor.getInt(idIndex);
+                String name = cursor.getString(artistIndex);
+                ArrayList<Integer> albums = getAlbumIDsForArtist(ctx, id);
+
+                artistData.add( new MetaDatabase.ArtistData(id, name, albums));
+            }
+        }
+        catch(NullPointerException e)
+        {
+            e.printStackTrace();
+        }
+
+        return artistData;
+    }
+
+    /* USE THIS ONLY FOR MetaDatabase */
+    static ArrayList<MetaDatabase.SongData> getAllSongMetadata(Context ctx)
+    {
+        Uri mediaUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+
+        String[] projection = {
+                "DISTINCT " + MediaStore.Audio.Media._ID,
+                MediaStore.Audio.Media.TITLE,
+                MediaStore.Audio.Media.ARTIST_ID,
+                MediaStore.Audio.Media.ALBUM_ID,
+                MediaStore.Audio.Media.DURATION
+        };
+
+        ArrayList<MetaDatabase.SongData> metadata = new ArrayList<>();
+
+        try ( Cursor cursor = ctx.getContentResolver()
+                .query(mediaUri, projection, null, null, null) )
+        {
+            int idIndex = cursor.getColumnIndex(MediaStore.Audio.Media._ID);
+            int titleIndex = cursor.getColumnIndex(MediaStore.Audio.Media.TITLE);
+            int artistIndex = cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST_ID);
+            int albumIndex = cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID);
+            int durationIndex = cursor.getColumnIndex(MediaStore.Audio.Media.DURATION);
+
+            while(cursor.moveToNext())
+            {
+                int songID = cursor.getInt(idIndex);
+                int artistID = cursor.getInt(artistIndex);
+                int albumID = cursor.getInt(albumIndex);
+                String title = cursor.getString(titleIndex);
+                String songUri = Uri.withAppendedPath(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, "" + songID).toString();
+                long duration = cursor.getLong(durationIndex);
+
+                metadata.add( new MetaDatabase.SongData(songID, albumID, artistID, title, songUri, duration) );
+            }
+        }
+        catch (NullPointerException e)
+        {
+            e.printStackTrace();
+        }
+
+        return metadata;
     }
 
     public static ArrayList<Integer> getAllPlaylistIDs(Context ctx)

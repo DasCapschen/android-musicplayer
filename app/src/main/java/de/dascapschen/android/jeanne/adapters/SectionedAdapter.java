@@ -1,23 +1,18 @@
 package de.dascapschen.android.jeanne.adapters;
 
 import android.content.Context;
-import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.media.MediaMetadataCompat;
-import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 
-import de.dascapschen.android.jeanne.MainActivity;
 import de.dascapschen.android.jeanne.R;
 import de.dascapschen.android.jeanne.data.QueryHelper;
-import de.dascapschen.android.jeanne.service.MusicService;
 
 public class SectionedAdapter extends RecyclerView.Adapter<SectionViewHolder>
 {

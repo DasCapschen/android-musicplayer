@@ -14,8 +14,8 @@ import android.support.v4.media.session.MediaButtonReceiver;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 
-import de.dascapschen.android.jeanne.R;
 import de.dascapschen.android.jeanne.MainActivity;
+import de.dascapschen.android.jeanne.R;
 
 public class MusicNotification
 {

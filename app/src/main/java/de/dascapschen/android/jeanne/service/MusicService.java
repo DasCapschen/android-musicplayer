@@ -3,9 +3,7 @@ package de.dascapschen.android.jeanne.service;
 import android.app.Notification;
 import android.content.ContentUris;
 import android.content.Intent;
-import android.media.browse.MediaBrowser;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -18,7 +16,6 @@ import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.util.Log;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

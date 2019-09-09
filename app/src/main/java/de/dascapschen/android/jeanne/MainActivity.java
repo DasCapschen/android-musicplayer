@@ -9,9 +9,8 @@ import android.content.res.Resources;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.GradientDrawable;
 import android.media.AudioManager;
-import android.media.Image;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.transition.AutoTransition;
 import android.support.transition.Scene;
@@ -26,6 +25,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.SpannableString;
+import android.text.method.LinkMovementMethod;
+import android.text.util.Linkify;
 import android.transition.TransitionSet;
 import android.util.Log;
 import android.view.Menu;
@@ -40,12 +42,12 @@ import android.widget.TextView;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
 import de.dascapschen.android.jeanne.adapters.OnItemClickListener;
 import de.dascapschen.android.jeanne.adapters.SongRecycler;
+import de.dascapschen.android.jeanne.data.MetaDatabase;
 import de.dascapschen.android.jeanne.service.MusicService;
 
 public class MainActivity extends AppCompatActivity implements NavigationRequest
@@ -73,6 +75,8 @@ public class MainActivity extends AppCompatActivity implements NavigationRequest
     Scene bottomClosed;
     Scene bottomOpen;
     boolean isBottomOpen = false;
+
+    MetaDatabase database;
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
@@ -120,7 +124,7 @@ public class MainActivity extends AppCompatActivity implements NavigationRequest
                 navigate(R.id.action_to_settings, null, false);
                 break;
             case R.id.menu_item_about:
-                navigate(R.id.action_to_about, null, false);
+                showAboutMessage();
                 break;
             case R.id.app_bar_search:
                 //navigate(R.id.action_to_search, null); //bundle with search query?
@@ -169,6 +173,7 @@ public class MainActivity extends AppCompatActivity implements NavigationRequest
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
 
         //ask for permission first
         if( checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
@@ -228,17 +233,62 @@ public class MainActivity extends AppCompatActivity implements NavigationRequest
         setVolumeControlStream(AudioManager.USE_DEFAULT_STREAM_TYPE);
     }
 
+    private void buildDatabase()
+    {
+        MetaDatabase.init(this);
+        final MetaDatabase db = MetaDatabase.getInstance();
+        if( !db.exists() )
+        {
+            new AsyncTask<Void, Void, Void>()
+            {
+                @Override
+                protected Void doInBackground(Void... voids)
+                {
+                    MetaDatabase db = MetaDatabase.getInstance();
+                    db.create();
+                    db.fill();
+                    return null;
+                }
+            }.execute();
+        }
+    }
+
     private void setupView()
     {
-        setContentView(R.layout.activity_main);
-
         Toolbar toolbar = findViewById(R.id.main_toolbar);
         setSupportActionBar(toolbar);
 
         navController = Navigation.findNavController( findViewById(R.id.main_navHost) );
 
+        buildDatabase();
         setupBottomSheet();
     }
+
+    private void showAboutMessage()
+    {
+        SpannableString message = new SpannableString("Android Music Player made for educational purposes.\n\n"
+                + "Copyright (c) Dominik \"DasCapschen\" Waurenschk 2019\n\n"
+                + "Source code available at https://gitlab.com/DasCapschen/android-musicplayer");
+
+        Linkify.addLinks(message, Linkify.WEB_URLS);
+
+        TextView messageView = new TextView(this);
+        messageView.setText(message);
+        messageView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+        messageView.setMovementMethod(LinkMovementMethod.getInstance());
+
+        int paddingDP = (int)(8.f * Resources.getSystem().getDisplayMetrics().density);
+
+        messageView.setPadding(paddingDP, paddingDP, paddingDP, paddingDP);
+
+        new AlertDialog.Builder(this)
+                .setIcon(R.drawable.ic_info_outline)
+                .setTitle("ABOUT JEANNE")
+                .setView(messageView)
+                .setPositiveButton(android.R.string.ok, null)
+                .show();
+    }
+
 
     private void setupBottomSheet()
     {

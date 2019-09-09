@@ -1,17 +1,14 @@
 package de.dascapschen.android.jeanne.adapters;
 
 import android.animation.ValueAnimator;
-import android.renderscript.Sampler;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.ScaleAnimation;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import de.dascapschen.android.jeanne.R;
 
