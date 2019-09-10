@@ -26,6 +26,7 @@ public class MetaDatabase
     static final String SONG_ID = "id_song";
     static final String SONG_TITLE = "title_song";
     static final String SONG_DURATION = "duration_song";
+    static final String SONG_TRACK = "tracknum_song";
     static final String SONG_URI = "uri_song";
 
     static final String TABLE_ALBUMS = "tAlbums";
@@ -90,13 +91,24 @@ public class MetaDatabase
 
     public void recreate()
     {
-        dropTables();
-        create();
-        fill();
+        new AsyncTask<Void, Void, Void>()
+        {
+            @Override
+            protected Void doInBackground(Void... voids)
+            {
+                dropTables();
+                create();
+                fill();
+                return null;
+            }
+        }.execute();
     }
 
     public void create()
     {
+        if(db == null || !db.isOpen())
+            open();
+
         createAlbumTable();
         createArtistTable();
         createSongTable();
@@ -106,6 +118,9 @@ public class MetaDatabase
     /* this might be an extremely gigantic query... should we do 1 query per song? */
     public void fill()
     {
+        if(db == null || !db.isOpen())
+            open();
+
         ArrayList<AlbumData> albums = QueryHelper.getAllAlbumMetadata(context);
         String albumQuery = "INSERT INTO "+TABLE_ALBUMS+"("+ALBUM_ID+","+ALBUM_TITLE+","+ALBUM_ART_URI+") VALUES (?,?,?);";
         for(AlbumData album : albums)
@@ -142,10 +157,10 @@ public class MetaDatabase
         Log.i("METADATA", "Added All Artists!");
 
         ArrayList<SongData> songs = QueryHelper.getAllSongMetadata(context);
-        String songQuery = "INSERT INTO "+TABLE_SONGS+"("+ SONG_ID +","+ ALBUM_ID+","+ARTIST_ID+","+SONG_TITLE+","+SONG_URI+","+SONG_DURATION+") VALUES (?,?,?,?,?,?);";
+        String songQuery = "INSERT INTO "+TABLE_SONGS+"("+ SONG_ID +","+ ALBUM_ID+","+ARTIST_ID+","+SONG_TITLE+","+SONG_URI+","+SONG_DURATION+","+SONG_TRACK+") VALUES (?,?,?,?,?,?,?);";
         for(SongData song : songs)
         {
-            Object[] bindings = new Object[6];
+            Object[] bindings = new Object[7];
 
             bindings[0] = song.songID;
             bindings[1] = song.albumID;
@@ -153,6 +168,7 @@ public class MetaDatabase
             bindings[3] = song.title;
             bindings[4] = song.uri;
             bindings[5] = song.duration;
+            bindings[6] = song.trackNumber;
 
             db.execSQL(songQuery, bindings);
         }
@@ -163,6 +179,9 @@ public class MetaDatabase
 
     private void dropTables()
     {
+        if(db == null || !db.isOpen())
+            open();
+
         db.execSQL( "DROP TABLE IF EXISTS "+ TABLE_PLAYLIST_SONGS +";" );
         db.execSQL( "DROP TABLE IF EXISTS "+ TABLE_ARTIST_ALBUMS+";" );
         db.execSQL( "DROP TABLE IF EXISTS "+ TABLE_PLAYLISTS +";" );
@@ -180,6 +199,7 @@ public class MetaDatabase
                         SONG_TITLE + " TEXT," +
                         SONG_URI + " TEXT NOT NULL," +
                         SONG_DURATION + " INTEGER," +
+                        SONG_TRACK + " INTEGER,"+
                         "FOREIGN KEY("+ALBUM_ID+") REFERENCES " + TABLE_ALBUMS +"("+ ALBUM_ID +")," +
                         "FOREIGN KEY("+ARTIST_ID+") REFERENCES " + TABLE_ARTISTS +"("+ ARTIST_ID +")" +
                     ");"
@@ -240,8 +260,9 @@ public class MetaDatabase
         String title;
         String uri;
         long duration;
+        int trackNumber;
 
-        SongData(int songid, int albumid, int artistid, String title, String uri, long duration)
+        SongData(int songid, int albumid, int artistid, String title, String uri, long duration, int trackNumber)
         {
             this.songID = songid;
             this.albumID = albumid;
@@ -249,6 +270,7 @@ public class MetaDatabase
             this.title = title;
             this.uri = uri;
             this.duration = duration;
+            this.trackNumber = trackNumber;
         }
     }
 
@@ -310,10 +332,10 @@ public class MetaDatabase
 
     ArrayList<Integer> getSongIDsForAlbum(int albumID)
     {
-        String[] projection = { SONG_ID, ALBUM_ID, SONG_TITLE };
+        String[] projection = { SONG_ID, ALBUM_ID, SONG_TRACK };
         String selection = ALBUM_ID +" = ?";
         String[] selectionArgs = { String.valueOf(albumID) };
-        String sort = SONG_TITLE + " ASC"; //idk why, but this sorts albums correctly...
+        String sort = SONG_TRACK + " ASC"; //idk why, but this sorts albums correctly...
 
         Cursor c = db.query(TABLE_SONGS, projection, selection, selectionArgs, null, null, sort);
 
@@ -343,11 +365,11 @@ public class MetaDatabase
                 SONG_ID,
                 ALBUM_ID,
                 ARTIST_ID,
-                SONG_TITLE
+                SONG_TRACK
         };
         String selection = ALBUM_ID +" = ? AND "+ARTIST_ID + " = ?";
         String[] selectionArgs = { String.valueOf(albumID), String.valueOf(artistID) };
-        String sort = SONG_TITLE + " ASC"; //idk why, but this sorts albums correctly...
+        String sort = SONG_TRACK + " ASC"; //idk why, but this sorts albums correctly...
 
         Cursor c = db.query(TABLE_SONGS, projection, selection, selectionArgs, null, null, sort);
 

@@ -237,19 +237,9 @@ public class MainActivity extends AppCompatActivity implements NavigationRequest
     {
         MetaDatabase.init(this);
         final MetaDatabase db = MetaDatabase.getInstance();
-        if( !db.exists() )
+        //if( !db.exists() ) //TODO: reenable when done with DB code!
         {
-            new AsyncTask<Void, Void, Void>()
-            {
-                @Override
-                protected Void doInBackground(Void... voids)
-                {
-                    MetaDatabase db = MetaDatabase.getInstance();
-                    db.create();
-                    db.fill();
-                    return null;
-                }
-            }.execute();
+            db.recreate();
         }
     }
 

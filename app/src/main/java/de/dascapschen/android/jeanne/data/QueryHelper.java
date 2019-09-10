@@ -65,14 +65,14 @@ public class QueryHelper
 
         String[] projection = {
                 "DISTINCT " + MediaStore.Audio.Media._ID,
-                MediaStore.Audio.Media.TITLE, //needed for sort
-                MediaStore.Audio.Media.ALBUM_ID //needed for selection
+                MediaStore.Audio.Media.ALBUM_ID, //needed for selection
+                MediaStore.Audio.Media.TRACK //sort by track number
         };
 
         String selection = MediaStore.Audio.Media.ALBUM_ID + "=?";
         String[] selectionArgs = { String.valueOf(albumID) };
 
-        String sort = MediaStore.Audio.Media.TITLE + " ASC";
+        String sort = MediaStore.Audio.Media.TRACK + " ASC";
 
         ArrayList<Integer> songIds = null;
 
@@ -109,7 +109,7 @@ public class QueryHelper
 
         String[] projection = {
                 "DISTINCT " + MediaStore.Audio.Media._ID,
-                MediaStore.Audio.Media.TITLE, //needed for sort
+                MediaStore.Audio.Media.TRACK, //needed for sort
                 MediaStore.Audio.Media.ALBUM_ID, //needed for selection
                 MediaStore.Audio.Media.ARTIST_ID
         };
@@ -118,7 +118,7 @@ public class QueryHelper
                 +" AND " + MediaStore.Audio.Media.ARTIST_ID + "=?";
         String[] selectionArgs = { String.valueOf(albumID), String.valueOf(artistID) };
 
-        String sort = MediaStore.Audio.Media.TITLE + " ASC";
+        String sort = MediaStore.Audio.Media.TRACK + " ASC";
 
         ArrayList<Integer> songIds = null;
 
@@ -482,6 +482,7 @@ public class QueryHelper
         String[] projection = {
                 "DISTINCT " + MediaStore.Audio.Media._ID,
                 MediaStore.Audio.Media.TITLE,
+                MediaStore.Audio.Media.TRACK,
                 MediaStore.Audio.Media.ARTIST_ID,
                 MediaStore.Audio.Media.ALBUM_ID,
                 MediaStore.Audio.Media.DURATION
@@ -497,6 +498,7 @@ public class QueryHelper
             int artistIndex = cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST_ID);
             int albumIndex = cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID);
             int durationIndex = cursor.getColumnIndex(MediaStore.Audio.Media.DURATION);
+            int trackIndex = cursor.getColumnIndex(MediaStore.Audio.Media.TRACK);
 
             while(cursor.moveToNext())
             {
@@ -506,8 +508,9 @@ public class QueryHelper
                 String title = cursor.getString(titleIndex);
                 String songUri = Uri.withAppendedPath(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, "" + songID).toString();
                 long duration = cursor.getLong(durationIndex);
+                int track = cursor.getInt(trackIndex);
 
-                metadata.add( new MetaDatabase.SongData(songID, albumID, artistID, title, songUri, duration) );
+                metadata.add( new MetaDatabase.SongData(songID, albumID, artistID, title, songUri, duration, track) );
             }
         }
         catch (NullPointerException e)
