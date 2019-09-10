@@ -11,12 +11,17 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fadeScrollbars="true"
-        android:scrollbarAlwaysDrawVerticalTrack="true"
+        android:scrollbarAlwaysDrawVerticalTrack="false"
         android:scrollbarSize="4dp"
-        android:scrollbarStyle="insideOverlay"
-        android:scrollbars="vertical"
+        android:scrollbarStyle="insideInset"
+        android:scrollbars="none"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:fastScrollEnabled="true"
+        app:fastScrollVerticalThumbDrawable="@drawable/fastscroll_thumb"
+        app:fastScrollVerticalTrackDrawable="@drawable/fastscroll_track"
+        app:fastScrollHorizontalThumbDrawable="@drawable/fastscroll_thumb"
+        app:fastScrollHorizontalTrackDrawable="@drawable/fastscroll_track" />
 </android.support.constraint.ConstraintLayout>

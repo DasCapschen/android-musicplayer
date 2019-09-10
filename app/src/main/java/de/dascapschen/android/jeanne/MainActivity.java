@@ -6,6 +6,7 @@ import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.GradientDrawable;
 import android.media.AudioManager;
@@ -595,7 +596,13 @@ public class MainActivity extends AppCompatActivity implements NavigationRequest
             if(songArtist != null) songArtist.setText( artist );
 
             ImageView art = findViewById(R.id.bottom_album_image);
-            art.setImageBitmap(metadata.getBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART));
+            art.setImageResource(R.drawable.ic_launcher_background); //fallback
+
+            Bitmap thumbnail = metadata.getBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART);
+            if(thumbnail!=null)
+            {
+                art.setImageBitmap(thumbnail);
+            }
         }
 
         @Override

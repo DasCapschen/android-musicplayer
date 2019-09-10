@@ -32,11 +32,13 @@
         android:id="@+id/main_bottomSheetFrame"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom">
+        android:layout_gravity="bottom"
+        android:elevation="100dp">
 
         <include
             layout="@layout/bottomsheet_closed"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:elevation="100dp" />
     </FrameLayout>
 </android.support.design.widget.CoordinatorLayout>

@@ -9,6 +9,7 @@
     android:animateLayoutChanges="true"
     android:background="@drawable/bottomsheet_bg"
     android:clickable="true"
+    android:elevation="100dp"
     android:onClick="onBottomSheetPressed"
     tools:context=".MainActivity">
 
