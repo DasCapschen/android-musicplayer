@@ -175,7 +175,6 @@ public class MainActivity extends AppCompatActivity implements NavigationRequest
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
         //ask for permission first
         if( checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
@@ -247,6 +246,8 @@ public class MainActivity extends AppCompatActivity implements NavigationRequest
 
     private void setupView()
     {
+        setContentView(R.layout.activity_main);
+
         Toolbar toolbar = findViewById(R.id.main_toolbar);
         setSupportActionBar(toolbar);
 

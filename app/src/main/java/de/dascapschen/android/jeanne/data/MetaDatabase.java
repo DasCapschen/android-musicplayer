@@ -14,6 +14,7 @@ import android.support.v4.media.MediaMetadataCompat;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class MetaDatabase
 {
@@ -45,9 +46,12 @@ public class MetaDatabase
     static final String TABLE_PLAYLIST_SONGS= "tPlaylistSongs";
     static final String TABLE_ARTIST_ALBUMS= "tArtistAlbums";
 
+    HashMap<String, Bitmap> cachedThumbnails;
+
     private MetaDatabase(Context context)
     {
         this.context = context;
+        cachedThumbnails = new HashMap<>();
     }
 
     public static void init(Context context)
@@ -511,10 +515,17 @@ public class MetaDatabase
 
         String art = c.getString(c.getColumnIndex(ALBUM_ART_URI));
 
-        Bitmap thumbnail  = BitmapFactory.decodeFile(art);
+        Bitmap thumbnail;
 
-        if(thumbnail == null)
-            Log.e("THUMBNAIL", "Could not be loaded");
+        if( cachedThumbnails.containsKey(art) )
+        {
+            thumbnail = cachedThumbnails.get(art);
+        }
+        else
+        {
+            thumbnail = BitmapFactory.decodeFile(art);
+            cachedThumbnails.put(art, thumbnail);
+        }
 
         c.close();
         return new MediaMetadataCompat.Builder()
@@ -559,10 +570,17 @@ public class MetaDatabase
         String albumArt = c.getString( c.getColumnIndex(ALBUM_ART_URI) );
         long count = c.getLong( c.getColumnIndex("numSongs") );
 
-        Bitmap thumbnail  = BitmapFactory.decodeFile(albumArt);
+        Bitmap thumbnail;
 
-        if(thumbnail == null)
-            Log.e("THUMBNAIL", "Could not be loaded");
+        if( cachedThumbnails.containsKey(albumArt) )
+        {
+            thumbnail = cachedThumbnails.get(albumArt);
+        }
+        else
+        {
+            thumbnail = BitmapFactory.decodeFile(albumArt);
+            cachedThumbnails.put(albumArt, thumbnail);
+        }
 
         c.close();
         return new MediaMetadataCompat.Builder()
@@ -601,10 +619,17 @@ public class MetaDatabase
         long albumCount = c.getLong( c.getColumnIndex("numAlbums") );
         String albumArt = c.getString( c.getColumnIndex(ALBUM_ART_URI));
 
-        Bitmap thumbnail  = BitmapFactory.decodeFile(albumArt);
+        Bitmap thumbnail;
 
-        if(thumbnail == null)
-            Log.e("THUMBNAIL", "Could not be loaded");
+        if( cachedThumbnails.containsKey(albumArt) )
+        {
+            thumbnail = cachedThumbnails.get(albumArt);
+        }
+        else
+        {
+            thumbnail = BitmapFactory.decodeFile(albumArt);
+            cachedThumbnails.put(albumArt, thumbnail);
+        }
 
         c.close();
         return new MediaMetadataCompat.Builder()
