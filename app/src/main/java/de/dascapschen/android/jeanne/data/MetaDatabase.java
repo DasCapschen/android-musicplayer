@@ -1,9 +1,15 @@
 package de.dascapschen.android.jeanne.data;
 
+import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.AsyncTask;
+import android.provider.MediaStore;
+import android.support.v4.content.ContentResolverCompat;
 import android.support.v4.media.MediaMetadataCompat;
 import android.util.Log;
 
@@ -454,6 +460,7 @@ public class MetaDatabase
         String sqlQuery = "SELECT " +
                 SONG_TITLE + "," +
                 ALBUM_TITLE + "," +
+                ALBUM_ART_URI+","+
                 ARTIST_NAME + "," +
                 SONG_URI + "," +
                 SONG_DURATION +
@@ -479,6 +486,13 @@ public class MetaDatabase
         String uri = c.getString( c.getColumnIndex(SONG_URI) );
         long duration = c.getLong( c.getColumnIndex(SONG_DURATION) );
 
+        String art = c.getString(c.getColumnIndex(ALBUM_ART_URI));
+
+        Bitmap thumbnail  = BitmapFactory.decodeFile(art);
+
+        if(thumbnail == null)
+            Log.e("THUMBNAIL", "Could not be loaded");
+
         c.close();
         return new MediaMetadataCompat.Builder()
                 .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, String.valueOf(songID))
@@ -487,6 +501,7 @@ public class MetaDatabase
                 .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, albumTitle)
                 .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI, uri)
                 .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, duration)
+                .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, thumbnail)
                 .build();
     }
 
@@ -521,12 +536,17 @@ public class MetaDatabase
         String albumArt = c.getString( c.getColumnIndex(ALBUM_ART_URI) );
         long count = c.getLong( c.getColumnIndex("numSongs") );
 
+        Bitmap thumbnail  = BitmapFactory.decodeFile(albumArt);
+
+        if(thumbnail == null)
+            Log.e("THUMBNAIL", "Could not be loaded");
+
         c.close();
         return new MediaMetadataCompat.Builder()
                 .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, String.valueOf(albumID))
                 .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, artistName)
                 .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, albumTitle)
-                .putString(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI, albumArt)
+                .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, thumbnail)
                 .putLong(MediaMetadataCompat.METADATA_KEY_NUM_TRACKS, count)
                 .build();
     }
@@ -535,10 +555,13 @@ public class MetaDatabase
     {
         String sqlQuery = "SELECT "+
                 ARTIST_NAME+","+
+                ALBUM_ART_URI+","+
                 "COUNT(*) AS numAlbums"+
                 " FROM " + TABLE_ARTISTS+
                 " JOIN " + TABLE_ARTIST_ALBUMS+
                 " ON "   + TABLE_ARTISTS+"."+ARTIST_ID+"="+TABLE_ARTIST_ALBUMS+"."+ARTIST_ID+
+                " JOIN " + TABLE_ALBUMS+
+                " ON "   + TABLE_ARTIST_ALBUMS+"."+ALBUM_ID+"="+TABLE_ALBUMS+"."+ALBUM_ID+
                 " WHERE "+ TABLE_ARTISTS+"."+ARTIST_ID+"=?"+
                 " GROUP BY " + TABLE_ARTISTS+"."+ARTIST_ID + ";";
         String[] selectionArgs = { String.valueOf(artistID) };
@@ -553,12 +576,19 @@ public class MetaDatabase
 
         String artistName = c.getString( c.getColumnIndex(ARTIST_NAME) );
         long albumCount = c.getLong( c.getColumnIndex("numAlbums") );
+        String albumArt = c.getString( c.getColumnIndex(ALBUM_ART_URI));
+
+        Bitmap thumbnail  = BitmapFactory.decodeFile(albumArt);
+
+        if(thumbnail == null)
+            Log.e("THUMBNAIL", "Could not be loaded");
 
         c.close();
         return new MediaMetadataCompat.Builder()
                 .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, String.valueOf(artistID))
                 .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, artistName)
                 .putLong(MediaMetadataCompat.METADATA_KEY_NUM_TRACKS, albumCount)
+                .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, thumbnail)
                 .build();
     }
 }

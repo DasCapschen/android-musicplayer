@@ -6,6 +6,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.NotificationCompat;
@@ -84,6 +85,8 @@ public class MusicNotification
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(mService, CHANNEL_ID);
 
+
+        //FIXME: cancel button does not show up!
         builder.setStyle(
                 new android.support.v4.media.app.NotificationCompat.MediaStyle()
                         .setMediaSession(token)
@@ -100,8 +103,13 @@ public class MusicNotification
         }
         else
         {
-            builder//TODO: .setLargeIcon( metadata.getBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART) )
-                .setContentTitle( metadata.getDescription().getTitle() )
+            Bitmap thumbnail = metadata.getBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART);
+            if(thumbnail != null)
+            {
+                builder.setLargeIcon(thumbnail);
+            }
+
+            builder.setContentTitle( metadata.getDescription().getTitle() )
                 .setContentText( metadata.getDescription().getSubtitle() );
         }
 

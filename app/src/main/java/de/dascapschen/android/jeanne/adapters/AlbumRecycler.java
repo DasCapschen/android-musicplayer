@@ -1,6 +1,7 @@
 package de.dascapschen.android.jeanne.adapters;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.support.v4.media.MediaMetadataCompat;
 
 import java.util.ArrayList;
@@ -29,5 +30,11 @@ public class AlbumRecycler extends RecyclerAdapter
 
         //load a default image if no art exists
         viewHolder.image.setImageResource( R.drawable.ic_launcher_background );
+
+        Bitmap thumbnail = metadata.getBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART);
+        if(thumbnail != null)
+        {
+            viewHolder.image.setImageBitmap(thumbnail);
+        }
     }
 }

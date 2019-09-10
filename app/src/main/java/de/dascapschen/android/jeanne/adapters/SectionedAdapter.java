@@ -1,6 +1,7 @@
 package de.dascapschen.android.jeanne.adapters;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.support.annotation.NonNull;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v7.widget.LinearLayoutManager;
@@ -80,7 +81,16 @@ public class SectionedAdapter extends RecyclerView.Adapter<SectionViewHolder>
         MediaMetadataCompat metadata = QueryHelper.getAlbumMetadataFromID(context, albumID);
         if(metadata == null) return;
 
-        sectionViewHolder.albumArt.setImageResource( R.drawable.ic_launcher_background ); //TODO: album art
+
+        //load a default image if no art exists
+        sectionViewHolder.albumArt.setImageResource( R.drawable.ic_launcher_background );
+
+        Bitmap thumbnail = metadata.getBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART);
+        if(thumbnail != null)
+        {
+            sectionViewHolder.albumArt.setImageBitmap(thumbnail);
+        }
+
         sectionViewHolder.albumTitle.setText( metadata.getString(MediaMetadataCompat.METADATA_KEY_ALBUM) );
 
         sectionViewHolder.nestedRecycler.setHasFixedSize(true);
