@@ -91,6 +91,7 @@ public class MetaDatabase
 
     public void recreate()
     {
+        ready = false;
         new AsyncTask<Void, Void, Void>()
         {
             @Override

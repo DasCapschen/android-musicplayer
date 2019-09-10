@@ -122,7 +122,8 @@ public class MainActivity extends AppCompatActivity implements NavigationRequest
                 back();
                 break;
             case R.id.menu_item_settings:
-                navigate(R.id.action_to_settings, null, false);
+                //navigate(R.id.action_to_settings, null, false); //TODO: settings
+                MetaDatabase.getInstance().recreate();
                 break;
             case R.id.menu_item_about:
                 showAboutMessage();
