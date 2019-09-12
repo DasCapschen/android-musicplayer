@@ -21,6 +21,7 @@ import de.dascapschen.android.jeanne.R;
 import de.dascapschen.android.jeanne.adapters.OnItemClickListener;
 import de.dascapschen.android.jeanne.adapters.SectionedAdapter;
 import de.dascapschen.android.jeanne.data.QueryHelper;
+import de.dascapschen.android.jeanne.service.MusicPlayer;
 import de.dascapschen.android.jeanne.service.MusicService;
 
 /**
@@ -115,16 +116,28 @@ public class ArtistDetailFragment extends Fragment implements OnItemClickListene
             MediaControllerCompat controller = MediaControllerCompat.getMediaController(activity);
             if(controller != null)
             {
-                //put all the album songIDs into our play queue
-                Bundle data = new Bundle();
-                data.putIntegerArrayList(MusicService.CUSTOM_ACTION_DATA_KEY,
-                        QueryHelper.getSongIDsForAlbum(getContext(), adapter.getIDAtPos(section)));
-
                 controller.getTransportControls()
-                        .sendCustomAction(MusicService.CUSTOM_ACTION_SET_QUEUE, data);
+                        .sendCustomAction(MusicService.CUSTOM_ACTION_CLEAR_QUEUE, null);
+
+                int newSongIndex = 0;
+
+                ArrayList<Integer> albums = QueryHelper.getAlbumIDsForArtist(getContext(), artistID);
+                for(int i = 0; i < albums.size(); i++)
+                {
+                    ArrayList<Integer> songs = QueryHelper.getSongIDsForAlbumArtist(getContext(), albums.get(i), artistID);
+                    if(i < section) newSongIndex += songs.size();
+
+                    Bundle data = new Bundle();
+                    data.putIntegerArrayList(MusicService.CUSTOM_ACTION_DATA_KEY, songs);
+
+                    controller.getTransportControls()
+                            .sendCustomAction(MusicService.CUSTOM_ACTION_APPEND_QUEUE, data);
+                }
+
+                newSongIndex += position;
 
                 //changes to item at index and plays it
-                controller.getTransportControls().skipToQueueItem( position );
+                controller.getTransportControls().skipToQueueItem( newSongIndex );
             }
         }
     }

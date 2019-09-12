@@ -613,8 +613,7 @@ public class MainActivity extends AppCompatActivity implements NavigationRequest
 
             if(isBottomOpen)
             {
-                //TODO: this is overkill, just scroll to position in queue!
-                updateQueueRecycler();
+                //TODO: scroll to position in queue!
             }
         }
 
