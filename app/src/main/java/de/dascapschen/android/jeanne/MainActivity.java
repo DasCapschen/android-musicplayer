@@ -386,6 +386,11 @@ public class MainActivity extends AppCompatActivity implements NavigationRequest
             RecyclerView queueView = findViewById(R.id.bottom_queue_recycler);
             queueView.setAdapter(adapter);
             queueView.setLayoutManager(new LinearLayoutManager(this));
+
+            //this feels unnecessarily complicated...
+            String id = MediaControllerCompat.getMediaController(this).getMetadata().getString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID);
+            int index = songIDs.indexOf( Integer.valueOf(id) );
+            queueView.smoothScrollToPosition(index);
         }
     }
 
@@ -604,6 +609,12 @@ public class MainActivity extends AppCompatActivity implements NavigationRequest
             if(thumbnail!=null)
             {
                 art.setImageBitmap(thumbnail);
+            }
+
+            if(isBottomOpen)
+            {
+                //TODO: this is overkill, just scroll to position in queue!
+                updateQueueRecycler();
             }
         }
 

@@ -320,7 +320,7 @@ public class MusicService extends MediaBrowserServiceCompat
             else //shuffleMode == SHUFFLE_MODE_NONE
             {
                 int songID = playlist.get(queueIndex);
-                playlist = unshuffled;
+                playlist = new ArrayList<>(unshuffled);
                 queueIndex = playlist.indexOf(songID);
 
                 updateMediasessionQueue();
@@ -336,12 +336,14 @@ public class MusicService extends MediaBrowserServiceCompat
             {
                 case CUSTOM_ACTION_CLEAR_QUEUE:
                     playlist = new ArrayList<>();
+                    unshuffled = new ArrayList<>();
                     break;
                 case CUSTOM_ACTION_APPEND_QUEUE:
                     if(songIDs == null || songIDs.isEmpty()) return;
 
                     if(shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_ALL)
                     {
+                        unshuffled.addAll(songIDs);
                         Collections.shuffle(songIDs);
                     }
 
@@ -356,6 +358,7 @@ public class MusicService extends MediaBrowserServiceCompat
                     playlist = songIDs;
                     if(shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_ALL)
                     {
+                        unshuffled = new ArrayList<>(songIDs);
                         Collections.shuffle(playlist);
                     }
                     break;

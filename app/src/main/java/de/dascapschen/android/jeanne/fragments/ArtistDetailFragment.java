@@ -29,6 +29,7 @@ import de.dascapschen.android.jeanne.service.MusicService;
 public class ArtistDetailFragment extends Fragment implements OnItemClickListener, SectionedAdapter.NestedItemClickListener
 {
     SectionedAdapter adapter;
+    int artistID;
 
     public ArtistDetailFragment()
     {
@@ -50,7 +51,7 @@ public class ArtistDetailFragment extends Fragment implements OnItemClickListene
     {
         super.onViewCreated(view, savedInstanceState);
 
-        int artistID = getArguments().getInt("artistID");
+        artistID = getArguments().getInt("artistID");
         //FIXME: wasting 35ms just for artist name
         MediaMetadataCompat metadata = QueryHelper.getArtistMetadataFromID(getContext(), artistID);
         if(metadata == null) return;
@@ -83,15 +84,22 @@ public class ArtistDetailFragment extends Fragment implements OnItemClickListene
             MediaControllerCompat controller = MediaControllerCompat.getMediaController(activity);
             if(controller != null)
             {
-                //put all the album songIDs into our play queue
-                Bundle data = new Bundle();
-                data.putIntegerArrayList(MusicService.CUSTOM_ACTION_DATA_KEY,
-                        QueryHelper.getSongIDsForAlbum(getContext(), adapter.getIDAtPos(position)));
-
+                //clear current queue
                 controller.getTransportControls()
-                        .sendCustomAction(MusicService.CUSTOM_ACTION_SET_QUEUE, data);
+                        .sendCustomAction(MusicService.CUSTOM_ACTION_CLEAR_QUEUE, null);
 
-                //changes to item at index and plays it
+                //add all songs from all albums to the queue
+                ArrayList<Integer> albums = QueryHelper.getAlbumIDsForArtist(getContext(), artistID);
+                for(int album : albums)
+                {
+                    Bundle data = new Bundle();
+                    data.putIntegerArrayList(MusicService.CUSTOM_ACTION_DATA_KEY,
+                            QueryHelper.getSongIDsForAlbumArtist(getContext(), album, artistID));
+                    controller.getTransportControls()
+                            .sendCustomAction(MusicService.CUSTOM_ACTION_APPEND_QUEUE, data);
+                }
+
+                //start playing anywhere
                 controller.getTransportControls().play();
             }
         }
