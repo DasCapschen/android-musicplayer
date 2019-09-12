@@ -21,7 +21,6 @@ import de.dascapschen.android.jeanne.R;
 import de.dascapschen.android.jeanne.adapters.OnItemClickListener;
 import de.dascapschen.android.jeanne.adapters.SectionedAdapter;
 import de.dascapschen.android.jeanne.data.QueryHelper;
-import de.dascapschen.android.jeanne.service.MusicPlayer;
 import de.dascapschen.android.jeanne.service.MusicService;
 
 /**
@@ -58,6 +57,11 @@ public class ArtistDetailFragment extends Fragment implements OnItemClickListene
         if(metadata == null) return;
 
         String artistName = metadata.getString(MediaMetadataCompat.METADATA_KEY_ARTIST);
+
+        if(artistName.equals("<unknown>"))
+        {
+            artistName = getString(R.string.unknown_replacement);
+        }
 
         getActivity().setTitle( artistName );
 

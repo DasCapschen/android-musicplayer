@@ -10,7 +10,6 @@ import android.graphics.Bitmap;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.GradientDrawable;
 import android.media.AudioManager;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.transition.AutoTransition;
@@ -599,6 +598,11 @@ public class MainActivity extends AppCompatActivity implements NavigationRequest
 
             String title = metadata.getString(MediaMetadataCompat.METADATA_KEY_TITLE);
             String artist = metadata.getString(MediaMetadataCompat.METADATA_KEY_ARTIST);
+
+            if(artist.equals("<unknown>"))
+            {
+                artist = getString(R.string.unknown_replacement);
+            }
 
             TextView text = findViewById(R.id.bottom_song_title_compact);
             if(text!=null) text.setText( title.concat(" - ").concat(artist) );

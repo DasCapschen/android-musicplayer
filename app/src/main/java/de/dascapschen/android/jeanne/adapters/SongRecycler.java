@@ -26,16 +26,27 @@ public class SongRecycler extends RecyclerAdapter
         MediaMetadataCompat metadata = QueryHelper.getSongMetadataFromID(mContext, id);
         if(metadata == null) return;
 
-        viewHolder.title.setText(metadata.getDescription().getTitle());
-        viewHolder.subtitle.setText(metadata.getDescription().getSubtitle());
+        String song = metadata.getString(MediaMetadataCompat.METADATA_KEY_TITLE);
+        String artist = metadata.getString(MediaMetadataCompat.METADATA_KEY_ARTIST);
 
-        //load a default image if no art exists
-        viewHolder.image.setImageResource( R.drawable.ic_launcher_background );
+        if(artist.equals("<unknown>"))
+        {
+            artist = mContext.getString(R.string.unknown_replacement);
+        }
 
-        Bitmap thumbnail = metadata.getBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART);
+        viewHolder.title.setText(song);
+        viewHolder.subtitle.setText(artist);
+
+
+        Bitmap thumbnail = metadata.getDescription().getIconBitmap();
         if(thumbnail != null)
         {
             viewHolder.image.setImageBitmap(thumbnail);
+        }
+        else
+        {
+            //load a default image if no art exists
+            viewHolder.image.setImageResource( R.drawable.ic_launcher_background );
         }
 
         if(selected != -1 && id == selected)

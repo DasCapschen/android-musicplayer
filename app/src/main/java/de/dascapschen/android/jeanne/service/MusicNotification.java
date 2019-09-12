@@ -109,8 +109,15 @@ public class MusicNotification
                 builder.setLargeIcon(thumbnail);
             }
 
-            builder.setContentTitle( metadata.getDescription().getTitle() )
-                .setContentText( metadata.getDescription().getSubtitle() );
+            String song = metadata.getString(MediaMetadataCompat.METADATA_KEY_TITLE);
+            String artist = metadata.getString(MediaMetadataCompat.METADATA_KEY_ARTIST);
+            if(artist.equals("<unknown>"))
+            {
+                artist = mService.getString(R.string.unknown_replacement);
+            }
+
+            builder.setContentTitle( song )
+                .setContentText( artist );
         }
 
         builder.setSmallIcon( R.drawable.ic_music_note )

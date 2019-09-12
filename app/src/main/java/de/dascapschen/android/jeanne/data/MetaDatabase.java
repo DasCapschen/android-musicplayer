@@ -1,15 +1,11 @@
 package de.dascapschen.android.jeanne.data;
 
-import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.AsyncTask;
-import android.provider.MediaStore;
-import android.support.v4.content.ContentResolverCompat;
 import android.support.v4.media.MediaMetadataCompat;
 import android.util.Log;
 
