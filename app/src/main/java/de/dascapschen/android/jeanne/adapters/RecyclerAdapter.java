@@ -82,5 +82,6 @@ public abstract class RecyclerAdapter extends RecyclerView.Adapter<ViewHolder>
     {
         return mData.get(position);
     }
+    public int getPosOfID(int id) { return mData.indexOf(id); }
 }
 

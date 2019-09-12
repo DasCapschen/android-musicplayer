@@ -79,6 +79,9 @@ public class MainActivity extends AppCompatActivity implements NavigationRequest
 
     MetaDatabase database;
 
+    RecyclerView queueRecylcer;
+    SongRecycler queueAdapter;
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
     {
@@ -304,17 +307,24 @@ public class MainActivity extends AppCompatActivity implements NavigationRequest
         TextView artistText = findViewById(R.id.bottom_artist_name);
         artistText.setSelected(true);
 
+        updateQueueRecycler();
+
         MediaControllerCompat controller = MediaControllerCompat.getMediaController(this);
 
         controllerCallbacks.onRepeatModeChanged( controller.getRepeatMode() );
         controllerCallbacks.onShuffleModeChanged( controller.getShuffleMode() );
-
-        updateQueueRecycler();
+        controllerCallbacks.onMetadataChanged( controller.getMetadata() );
+        controllerCallbacks.onPlaybackStateChanged( controller.getPlaybackState() );
     }
 
     public void onBottomSheetHidePressed(View v)
     {
         bottomSheetAnimation(true);
+
+        //update Metadata and State (because everything resets when changing layouts)
+        MediaControllerCompat controller = MediaControllerCompat.getMediaController(this);
+        controllerCallbacks.onMetadataChanged( controller.getMetadata() );
+        controllerCallbacks.onPlaybackStateChanged( controller.getPlaybackState() );
 
         TextView songText = findViewById(R.id.bottom_song_title_compact);
         songText.setSelected(true); // to make marquee scrolling work
@@ -362,11 +372,6 @@ public class MainActivity extends AppCompatActivity implements NavigationRequest
         bgAnim.start();
 
         isBottomOpen = !close;
-
-        //update Metadata and State (because everything resets when changing layouts)
-        MediaControllerCompat controller = MediaControllerCompat.getMediaController(this);
-        controllerCallbacks.onMetadataChanged( controller.getMetadata() );
-        controllerCallbacks.onPlaybackStateChanged( controller.getPlaybackState() );
     }
 
     void updateQueueRecycler()
@@ -381,16 +386,17 @@ public class MainActivity extends AppCompatActivity implements NavigationRequest
                 songIDs.add( (int)item.getQueueId() );
             }
 
-            SongRecycler adapter = new SongRecycler(this, onQueueItemClickedListener, songIDs, false);
+            queueAdapter = new SongRecycler(this, onQueueItemClickedListener, songIDs, false);
 
-            RecyclerView queueView = findViewById(R.id.bottom_queue_recycler);
-            queueView.setAdapter(adapter);
-            queueView.setLayoutManager(new LinearLayoutManager(this));
+            queueRecylcer = findViewById(R.id.bottom_queue_recycler);
+            queueRecylcer.setAdapter(queueAdapter);
+            queueRecylcer.setLayoutManager(new LinearLayoutManager(this));
 
             //this feels unnecessarily complicated...
             String id = MediaControllerCompat.getMediaController(this).getMetadata().getString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID);
             int index = songIDs.indexOf( Integer.valueOf(id) );
-            queueView.smoothScrollToPosition(index);
+            queueRecylcer.smoothScrollToPosition(index);
+            queueAdapter.setSelected( Integer.valueOf(id) );
         }
     }
 
@@ -614,6 +620,12 @@ public class MainActivity extends AppCompatActivity implements NavigationRequest
             if(isBottomOpen)
             {
                 //TODO: scroll to position in queue!
+                int id = Integer.valueOf(
+                        metadata.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID)
+                );
+
+                queueRecylcer.smoothScrollToPosition( queueAdapter.getPosOfID(id) );
+                queueAdapter.setSelected(id);
             }
         }
 

@@ -11,6 +11,8 @@ import de.dascapschen.android.jeanne.data.QueryHelper;
 
 public class SongRecycler extends RecyclerAdapter
 {
+    int selected = -1;
+
     public SongRecycler(Context context, OnItemClickListener listener, ArrayList<Integer> data, boolean useEndPadding)
     {
         super(context, listener, data, useEndPadding);
@@ -35,5 +37,23 @@ public class SongRecycler extends RecyclerAdapter
         {
             viewHolder.image.setImageBitmap(thumbnail);
         }
+
+        if(selected != -1 && id == selected)
+        {
+            viewHolder.layout.setBackgroundResource(R.color.colorPrimaryDark);
+        }
+        else
+        {
+            viewHolder.layout.setBackgroundResource(R.color.transparent);
+        }
+    }
+
+    public void setSelected(int id)
+    {
+        int oldSelected = selected;
+        selected = id;
+
+        notifyItemChanged(mData.indexOf(oldSelected));
+        notifyItemChanged(mData.indexOf(id));
     }
 }
