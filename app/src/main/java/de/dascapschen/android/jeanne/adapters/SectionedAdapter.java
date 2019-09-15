@@ -81,14 +81,15 @@ public class SectionedAdapter extends RecyclerView.Adapter<SectionViewHolder>
         MediaMetadataCompat metadata = QueryHelper.getAlbumMetadataFromID(context, albumID);
         if(metadata == null) return;
 
-
-        //load a default image if no art exists
-        sectionViewHolder.albumArt.setImageResource( R.drawable.ic_launcher_background );
-
-        Bitmap thumbnail = metadata.getBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART);
+        Bitmap thumbnail = metadata.getDescription().getIconBitmap();
         if(thumbnail != null)
         {
             sectionViewHolder.albumArt.setImageBitmap(thumbnail);
+        }
+        else
+        {
+            //load a default image if no art exists
+            sectionViewHolder.albumArt.setImageResource( R.drawable.ic_launcher_background );
         }
 
         sectionViewHolder.albumTitle.setText( metadata.getString(MediaMetadataCompat.METADATA_KEY_ALBUM) );

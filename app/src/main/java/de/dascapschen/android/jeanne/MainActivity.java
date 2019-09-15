@@ -2,8 +2,12 @@ package de.dascapschen.android.jeanne;
 
 import android.Manifest;
 import android.animation.ValueAnimator;
+import android.app.DownloadManager;
+import android.app.SearchManager;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -37,6 +41,7 @@ import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.SearchView;
 import android.widget.TextView;
 
 import androidx.navigation.NavController;
@@ -48,6 +53,7 @@ import java.util.List;
 import de.dascapschen.android.jeanne.adapters.OnItemClickListener;
 import de.dascapschen.android.jeanne.adapters.SongRecycler;
 import de.dascapschen.android.jeanne.data.MetaDatabase;
+import de.dascapschen.android.jeanne.data.QueryHelper;
 import de.dascapschen.android.jeanne.service.MusicService;
 
 public class MainActivity extends AppCompatActivity implements NavigationRequest
@@ -112,6 +118,15 @@ public class MainActivity extends AppCompatActivity implements NavigationRequest
     public boolean onCreateOptionsMenu(Menu menu)
     {
         getMenuInflater().inflate( R.menu.popup_menu, menu );
+
+        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        SearchView searchView = (SearchView)menu.findItem(R.id.app_bar_search).getActionView();
+
+        //necessary (see searchable.xml)
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+        searchView.setIconifiedByDefault(true);   //be an icon!
+        searchView.setSubmitButtonEnabled(false); //not necessary, just takes space away
+
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -131,7 +146,7 @@ public class MainActivity extends AppCompatActivity implements NavigationRequest
                 showAboutMessage();
                 break;
             case R.id.app_bar_search:
-                //navigate(R.id.action_to_search, null); //bundle with search query?
+                //navigate(R.id.action_to_search, null);
                 break;
         }
 
@@ -154,7 +169,8 @@ public class MainActivity extends AppCompatActivity implements NavigationRequest
     @Override
     public void back()
     {
-        navController.popBackStack(R.id.destination_main, false);
+        //navController.popBackStack(R.id.destination_main, false);
+        navController.popBackStack();
         getSupportActionBar().setDisplayHomeAsUpEnabled(false);
         setTitle( R.string.app_name );
     }
@@ -188,6 +204,26 @@ public class MainActivity extends AppCompatActivity implements NavigationRequest
         else
         {
             setupView();
+        }
+        
+        handleIntent(getIntent());
+    }
+    
+    @Override
+    protected void onNewIntent(Intent intent)
+    {
+        setIntent(intent);
+        handleIntent(intent);
+    }
+    
+    private void handleIntent(Intent intent)
+    {
+        if(Intent.ACTION_SEARCH.equals(intent.getAction()))
+        {
+            Bundle args = new Bundle();
+            args.putString("query", intent.getStringExtra(SearchManager.QUERY));
+
+            navigate(R.id.action_to_search, args);
         }
     }
 

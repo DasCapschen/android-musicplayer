@@ -635,4 +635,95 @@ public class MetaDatabase
                 .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, thumbnail)
                 .build();
     }
+
+
+    ArrayList<Integer> getSongIDsByName(String name)
+    {
+        String[] projection = { SONG_ID, SONG_TITLE };
+        String sort = SONG_TITLE + " ASC";
+        String selection = SONG_TITLE + " LIKE ?";
+        String[] selectionArgs = { "%"+name+"%" };
+
+        Cursor c = db.query(TABLE_SONGS, projection, selection, selectionArgs, null, null, sort);
+
+        ArrayList<Integer> songIDs = null;
+
+        try
+        {
+            songIDs = new ArrayList<>();
+            int idIndex = c.getColumnIndex(SONG_ID);
+            while(c.moveToNext())
+            {
+                songIDs.add( c.getInt(idIndex) );
+            }
+        }
+        catch(NullPointerException e)
+        {
+            e.printStackTrace();
+        }
+
+        c.close();
+        return songIDs;
+    }
+
+
+    ArrayList<Integer> getAlbumIDsByName(String name)
+    {
+        String[] projection = { ALBUM_ID, ALBUM_TITLE };
+        String sort = ALBUM_TITLE + " ASC";
+        String selection = ALBUM_TITLE + " LIKE ?";
+        String[] selectionArgs = { "%"+name+"%" };
+
+        Cursor c = db.query(TABLE_ALBUMS, projection, selection, selectionArgs, null, null, sort);
+
+        ArrayList<Integer> songIDs = null;
+
+        try
+        {
+            songIDs = new ArrayList<>();
+            int idIndex = c.getColumnIndex(ALBUM_ID);
+            while(c.moveToNext())
+            {
+                songIDs.add( c.getInt(idIndex) );
+            }
+        }
+        catch(NullPointerException e)
+        {
+            e.printStackTrace();
+        }
+
+        c.close();
+        return songIDs;
+    }
+
+
+    ArrayList<Integer> getArtistIDsByName(String name)
+    {
+        String[] projection = { ARTIST_ID, ARTIST_NAME };
+        String sort = ARTIST_NAME + " ASC";
+        String selection = ARTIST_NAME + " LIKE ?";
+        String[] selectionArgs = { "%"+name+"%" };
+
+        Cursor c = db.query(TABLE_ARTISTS, projection, selection, selectionArgs, null, null, sort);
+
+        ArrayList<Integer> songIDs = null;
+
+        try
+        {
+            songIDs = new ArrayList<>();
+            int idIndex = c.getColumnIndex(ARTIST_ID);
+            while(c.moveToNext())
+            {
+                songIDs.add( c.getInt(idIndex) );
+            }
+        }
+        catch(NullPointerException e)
+        {
+            e.printStackTrace();
+        }
+
+        c.close();
+        return songIDs;
+    }
+
 }

@@ -535,4 +535,41 @@ public class QueryHelper
         return null;
     }
 
+
+    public static ArrayList<Integer> getSongIDsByName(Context ctx, String name)
+    {
+        MetaDatabase metaDB = MetaDatabase.getInstance();
+
+        if(metaDB.ready)
+        {
+            return metaDB.getSongIDsByName(name);
+        }
+
+        return null;
+    }
+
+    public static ArrayList<Integer> getAlbumIDsByName(Context ctx, String name)
+    {
+        MetaDatabase metaDB = MetaDatabase.getInstance();
+
+        if(metaDB.ready)
+        {
+            return metaDB.getAlbumIDsByName(name);
+        }
+
+        return null;
+    }
+
+    public static ArrayList<Integer> getArtistIDsByName(Context ctx, String name)
+    {
+        MetaDatabase metaDB = MetaDatabase.getInstance();
+
+        if(metaDB.ready)
+        {
+            return metaDB.getArtistIDsByName(name);
+        }
+
+        return null;
+    }
+
 }

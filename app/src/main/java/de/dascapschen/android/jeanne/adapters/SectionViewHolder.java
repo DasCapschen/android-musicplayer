@@ -86,6 +86,7 @@ public class SectionViewHolder extends RecyclerView.ViewHolder implements View.O
     @Override
     public void onClick(View v)
     {
+        if(listener == null) return;
         listener.onItemClicked(getAdapterPosition());
     }
 }
